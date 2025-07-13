@@ -15,16 +15,26 @@
 #ifndef WX_PRECOMP
 #include <wx/wx.h>
 #endif
+
 #include <wx/stc/stc.h>
 #include <wx/file.h>
 #include <wx/wfstream.h>
+#include <wx/clipbrd.h>
+#include <wx/dataobj.h>
+
 #include <filesystem>
 #include <fstream>
 #include <string>
+
 #include "about.h"
 
-using namespace std;
-namespace fs = filesystem;
+namespace fs = std::filesystem;
+
+constexpr int ID_COPY_ALL_FIELDS  = wxID_HIGHEST + 1;
+constexpr int ID_PASTE_ALL_FIELDS = wxID_HIGHEST + 2;
+
+constexpr char ICONS_PATH[] = "icons/";
+
 /**
  * @brief The main App class
  */
@@ -51,9 +61,9 @@ public:
     MainFrame(const wxString &title);
 
 private:
-    using cmd = wxCommandEvent;
-    wxPanel *panel = new wxPanel(this, wxID_ANY);                                        // The main panel
-    wxStyledTextCtrl *editor = new wxStyledTextCtrl(panel, wxID_ANY, wxDefaultPosition); // The text editor
+    using cmd = wxCommandEvent; 
+    
+    wxStyledTextCtrl *editor;
 
     // Event methods for menu items
     void onInfo(cmd &evt);
@@ -64,6 +74,7 @@ private:
     void OnUndo(cmd &evt);
     void OnRedo(cmd &evt);
     void OnCopy(cmd &evt);
+    void OnCopyCustom(cmd &evt);
     void OnCut(cmd &evt);
     void OnPaste(cmd &evt);
 };

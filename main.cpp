@@ -12,6 +12,7 @@
  */
 
 #include "main.h"
+using namespace std;
 
 wxIMPLEMENT_APP(App);
 
@@ -28,21 +29,34 @@ MainFrame::MainFrame(const wxString &title) : wxFrame(nullptr, wxID_ANY, title)
 #if WIN32
     this->SetIcon(wxICON(appicon)); // Set the application icon
 #endif                              // WIN32
+    wxBoxSizer *main = new wxBoxSizer(wxHORIZONTAL);
 
-    //
-    // Widgets
-    //
+    wxPanel *editorPanel = new wxPanel(this, wxID_ANY);
+    wxPanel *buttonsPanel = new wxPanel(this, wxID_ANY);
 
-    wxBoxSizer *main = new wxBoxSizer(wxVERTICAL); // The main sizer contains all the widgets
-
-    wxBoxSizer *panelsizer = new wxBoxSizer(wxVERTICAL); // The sizer of the panel
-
+    editor = new wxStyledTextCtrl(editorPanel, wxID_ANY, wxDefaultPosition);
+    wxBoxSizer *panelsizer = new wxBoxSizer(wxVERTICAL);
     panelsizer->Add(editor, 1, wxALL | wxEXPAND, 0);
-    editor->SetMinSize(wxSize(300, 300));
+    editor->SetMinSize(wxSize(600, 600));
+    editorPanel->SetSizerAndFit(panelsizer);
 
-    panel->SetSizerAndFit(panelsizer);
+    wxBitmap bmpCopy(string(ICONS_PATH) + "icons8-copy-48.png", wxBITMAP_TYPE_PNG);
+    wxImage imgCopy = bmpCopy.ConvertToImage().Scale(20, 20, wxIMAGE_QUALITY_HIGH);
+    wxBitmap bmpScalerCopy(imgCopy);
+    wxBitmapButton *bmpBtn1 = new wxBitmapButton(buttonsPanel, ID_COPY_ALL_FIELDS, bmpScalerCopy, wxDefaultPosition, wxSize(40, 40));
 
-    main->Add(panel, 1, wxALL | wxEXPAND, 0);
+    wxBitmap bmpPaste(string(ICONS_PATH) + "icons8-paste-48.png", wxBITMAP_TYPE_PNG);
+    wxImage imgPaste = bmpPaste.ConvertToImage().Scale(20, 20, wxIMAGE_QUALITY_HIGH);
+    wxBitmap imgScalerPaste(imgPaste);
+    wxBitmapButton *bmpBtn2 = new wxBitmapButton(buttonsPanel, ID_PASTE_ALL_FIELDS, imgScalerPaste, wxDefaultPosition, wxSize(40, 40));
+
+    wxBoxSizer *panelButtonSizer = new wxBoxSizer(wxVERTICAL);
+    panelButtonSizer->Add(bmpBtn1, 0, wxALL, 5);
+    panelButtonSizer->Add(bmpBtn2, 0, wxALL, 5);
+    buttonsPanel->SetSizerAndFit(panelButtonSizer);
+
+    main->Add(editorPanel, 1, wxALL | wxEXPAND, 0);
+    main->Add(buttonsPanel, 0, wxALL | wxEXPAND, 0);
 
     SetSizerAndFit(main);
 
@@ -96,6 +110,8 @@ MainFrame::MainFrame(const wxString &title) : wxFrame(nullptr, wxID_ANY, title)
     Bind(wxEVT_MENU, &MainFrame::OnCopy, this, wxID_COPY);
     Bind(wxEVT_MENU, &MainFrame::OnPaste, this, wxID_PASTE);
     Bind(wxEVT_MENU, &MainFrame::onInfo, this, wxID_INFO);
+    Bind(wxEVT_BUTTON, &MainFrame::OnCopyCustom, this, ID_COPY_ALL_FIELDS);
+    Bind(wxEVT_BUTTON, &MainFrame::OnPaste, this, ID_PASTE_ALL_FIELDS);
 }
 
 void MainFrame::OnExit(cmd &evt)
@@ -223,6 +239,21 @@ void MainFrame::OnCut(cmd &evt)
 void MainFrame::OnCopy(cmd &evt)
 {
     this->editor->Copy();
+}
+
+void MainFrame::OnCopyCustom(cmd &evt)
+{
+    wxString text = this->editor->GetText();
+    if (wxTheClipboard->Open())
+    {
+        wxTheClipboard->Clear();
+        wxTheClipboard->SetData(new wxTextDataObject(text));
+        wxTheClipboard->Close();
+    }
+    else
+    {
+        wxMessageBox("Failed to open the clipboard.", "Error", wxOK | wxICON_ERROR);
+    }
 }
 
 void MainFrame::OnPaste(cmd &evt)
