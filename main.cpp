@@ -69,12 +69,14 @@ MainFrame::MainFrame(const wxString &title) : wxFrame(nullptr, wxID_ANY, title)
     edit->Append(wxID_CUT);
     edit->Append(wxID_PASTE);
 
-  
+    wxMenu *info = new wxMenu;
+    info->Append(wxID_INFO);
 
     wxMenuBar *menubar = new wxMenuBar;
     menubar->Append(file, "&File");
     menubar->Append(edit, "&Edit");
     menubar->Append(help, "&Help");
+    menubar->Append(info, "&Info");
 
     SetMenuBar(menubar);
 
@@ -92,6 +94,7 @@ MainFrame::MainFrame(const wxString &title) : wxFrame(nullptr, wxID_ANY, title)
     Bind(wxEVT_MENU, &MainFrame::OnCut, this, wxID_CUT);
     Bind(wxEVT_MENU, &MainFrame::OnCopy, this, wxID_COPY);
     Bind(wxEVT_MENU, &MainFrame::OnPaste, this, wxID_PASTE);
+    Bind(wxEVT_MENU, &MainFrame::onInfo, this, wxID_INFO);
 }
 
 void MainFrame::OnExit(cmd &evt)
@@ -164,4 +167,8 @@ void MainFrame::OnPaste(cmd &evt)
     this->editor->Paste();
 }
 
-
+void MainFrame::onInfo(cmd &evt)
+{
+    wxMessageBox("Task 1",
+                 "Info", wxOK | wxICON_INFORMATION);
+}

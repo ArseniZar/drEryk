@@ -49,6 +49,7 @@ private:
     wxStyledTextCtrl *editor = new wxStyledTextCtrl(panel, wxID_ANY, wxDefaultPosition); // The text editor
 
     // Event methods for menu items
+    void onInfo(cmd& evt);
     void OnExit(cmd& evt);
     void OnAbout(cmd& evt);
     void OnSaveAs(cmd& WXUNUSED(evt));
