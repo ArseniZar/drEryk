@@ -70,6 +70,7 @@ private:
     void OnExit(cmd &evt);
     void OnAbout(cmd &evt);
     void OnSaveAs(cmd &WXUNUSED(evt));
+    void OnOpen(cmd &evt);
     void OnSaveAsCustom(cmd &evt);
     void OnUndo(cmd &evt);
     void OnRedo(cmd &evt);
@@ -81,7 +82,7 @@ private:
 
 
 void SaveStringToFile(const std::string& filepath, const std::string& content);
-
+std::string ReadFileToString(const fs::path& path);
 #endif // MAIN_H
 
 /**

@@ -104,6 +104,7 @@ MainFrame::MainFrame(const wxString &title) : wxFrame(nullptr, wxID_ANY, title)
     Bind(wxEVT_MENU, &MainFrame::OnAbout, this, wxID_ABOUT);
     // Bind(wxEVT_MENU, &MainFrame::OnSaveAs, this, wxID_SAVEAS);
     Bind(wxEVT_MENU, &MainFrame::OnSaveAsCustom, this, wxID_SAVEAS);
+    Bind(wxEVT_MENU, &MainFrame::OnOpen, this, wxID_OPEN);
     Bind(wxEVT_MENU, &MainFrame::OnUndo, this, wxID_UNDO);
     Bind(wxEVT_MENU, &MainFrame::OnRedo, this, wxID_REDO);
     Bind(wxEVT_MENU, &MainFrame::OnCut, this, wxID_CUT);
@@ -153,6 +154,66 @@ void MainFrame::OnSaveAs(cmd &WXUNUSED(evt))
         file->Write(str);
     }
     file->Close();
+}
+
+string ReadFileToString(const fs::path &path)
+{
+    ifstream file;
+    file.exceptions(ifstream::failbit | ifstream::badbit);
+    file.open(path, ios::binary);
+
+    stringstream buffer;
+    buffer << file.rdbuf();
+    file.close();
+
+    return buffer.str();
+}
+
+void MainFrame::OnOpen(cmd &evt)
+{
+    wxFileDialog openFileDialog(this, "Open file", "", "", "Plain text files (*.*)|*.*", wxFD_OPEN | wxFD_FILE_MUST_EXIST);
+
+    if (openFileDialog.ShowModal() == wxID_CANCEL)
+        return;
+
+    wxString p = openFileDialog.GetPath();
+    fs::path path = fs::u8path(string(p.mb_str(wxConvUTF8)));
+
+    try
+    {
+
+        if (!fs::exists(path))
+        {
+            wxMessageBox("Read error: File does not exist.", "Error", wxOK | wxICON_ERROR);
+            return;
+        }
+
+        if (fs::is_directory(path))
+        {
+            wxMessageBox("Read error: The specified path is a directory, not a file.", "Error", wxOK | wxICON_ERROR);
+            return;
+        }
+
+        string content = ReadFileToString(path);
+        wxString wxContent = wxString::FromUTF8(content.c_str());
+        this->editor->SetText(wxContent);
+    }
+    catch (const std::ifstream::failure &)
+    {
+        wxMessageBox("File read error: cannot open or read the file.", "Error", wxOK | wxICON_ERROR);
+    }
+    catch (const fs::filesystem_error &e)
+    {
+        wxMessageBox("Filesystem error: " + wxString(e.what()), "Error", wxOK | wxICON_ERROR);
+    }
+    catch (const std::exception &e)
+    {
+        wxMessageBox("Error: " + wxString(e.what()), "Error", wxOK | wxICON_ERROR);
+    }
+    catch (...)
+    {
+        wxMessageBox("Unknown error occurred while reading the file.", "Error", wxOK | wxICON_ERROR);
+    }
 }
 
 void SaveStringToFile(const fs::path &filepath, const string &content)
