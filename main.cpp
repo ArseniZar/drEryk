@@ -153,7 +153,7 @@ void MainFrame::OnSaveAsCustom(cmd &evt)
 {
 
     wxString str = this->editor->GetText();
-    std::string text = std::string(str.mb_str(wxConvUTF8));
+    string text = string(str.mb_str(wxConvUTF8));
 
     wxFileDialog saveFileAs(this, "Save as", "", "", "Plain text files (*.*)|*.*", wxFD_SAVE | wxFD_OVERWRITE_PROMPT);
     if (saveFileAs.ShowModal() == wxID_CANCEL)
@@ -162,7 +162,7 @@ void MainFrame::OnSaveAsCustom(cmd &evt)
     }
 
     wxString p = saveFileAs.GetPath();
-    fs::path path = fs::u8path(std::string(p.mb_str(wxConvUTF8)));
+    fs::path path = fs::u8path(string(p.mb_str(wxConvUTF8)));
 
     try
     {
@@ -187,7 +187,7 @@ void MainFrame::OnSaveAsCustom(cmd &evt)
         SaveStringToFile(path, text);
         wxMessageBox("File saved successfully.", "Success", wxOK | wxICON_INFORMATION);
     }
-    catch (const std::ofstream::failure &)
+    catch (const ofstream::failure &)
     {
         wxMessageBox("Error writing file: cannot open or write to file. Check permissions and disk space.", "Error", wxOK | wxICON_ERROR);
     }
@@ -195,7 +195,7 @@ void MainFrame::OnSaveAsCustom(cmd &evt)
     {
         wxMessageBox("Filesystem error. Check the path and permissions.", "Error", wxOK | wxICON_ERROR);
     }
-    catch (const std::exception &)
+    catch (const exception &)
     {
         wxMessageBox("An error occurred while saving the file.", "Error", wxOK | wxICON_ERROR);
     }
