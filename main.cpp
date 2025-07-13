@@ -88,7 +88,8 @@ MainFrame::MainFrame(const wxString &title) : wxFrame(nullptr, wxID_ANY, title)
     //
     Bind(wxEVT_MENU, &MainFrame::OnExit, this, wxID_EXIT);
     Bind(wxEVT_MENU, &MainFrame::OnAbout, this, wxID_ABOUT);
-    Bind(wxEVT_MENU, &MainFrame::OnSaveAs, this, wxID_SAVEAS);
+    // Bind(wxEVT_MENU, &MainFrame::OnSaveAs, this, wxID_SAVEAS);
+    Bind(wxEVT_MENU, &MainFrame::OnSaveAsCustom, this, wxID_SAVEAS);
     Bind(wxEVT_MENU, &MainFrame::OnUndo, this, wxID_UNDO);
     Bind(wxEVT_MENU, &MainFrame::OnRedo, this, wxID_REDO);
     Bind(wxEVT_MENU, &MainFrame::OnCut, this, wxID_CUT);
@@ -138,9 +139,71 @@ void MainFrame::OnSaveAs(cmd &WXUNUSED(evt))
     file->Close();
 }
 
-//
-// The following forward declared functions are self-explanatory :)
-//
+void SaveStringToFile(const fs::path &filepath, const string &content)
+{
+    ofstream file;
+    file.exceptions(ofstream::failbit | ofstream::badbit);
+
+    file.open(filepath, ios::binary);
+    file << content;
+    file.close();
+}
+
+void MainFrame::OnSaveAsCustom(cmd &evt)
+{
+
+    wxString str = this->editor->GetText();
+    std::string text = std::string(str.mb_str(wxConvUTF8));
+
+    wxFileDialog saveFileAs(this, "Save as", "", "", "Plain text files (*.*)|*.*", wxFD_SAVE | wxFD_OVERWRITE_PROMPT);
+    if (saveFileAs.ShowModal() == wxID_CANCEL)
+    {
+        return;
+    }
+
+    wxString p = saveFileAs.GetPath();
+    fs::path path = fs::u8path(std::string(p.mb_str(wxConvUTF8)));
+
+    try
+    {
+        if (fs::exists(path))
+        {
+            if (fs::is_directory(path))
+            {
+                wxMessageBox("Write error: the specified path is a directory.", "Error", wxOK | wxICON_ERROR);
+                return;
+            }
+        }
+        else
+        {
+            fs::path parent = path.parent_path();
+            if (!fs::exists(parent) || !fs::is_directory(parent))
+            {
+                wxMessageBox("Write error: parent directory does not exist.", "Error", wxOK | wxICON_ERROR);
+                return;
+            }
+        }
+
+        SaveStringToFile(path, text);
+        wxMessageBox("File saved successfully.", "Success", wxOK | wxICON_INFORMATION);
+    }
+    catch (const std::ofstream::failure &)
+    {
+        wxMessageBox("Error writing file: cannot open or write to file. Check permissions and disk space.", "Error", wxOK | wxICON_ERROR);
+    }
+    catch (const fs::filesystem_error &)
+    {
+        wxMessageBox("Filesystem error. Check the path and permissions.", "Error", wxOK | wxICON_ERROR);
+    }
+    catch (const std::exception &)
+    {
+        wxMessageBox("An error occurred while saving the file.", "Error", wxOK | wxICON_ERROR);
+    }
+    catch (...)
+    {
+        wxMessageBox("Unknown error occurred while saving the file.", "Error", wxOK | wxICON_ERROR);
+    }
+}
 
 void MainFrame::OnUndo(cmd &evt)
 {
