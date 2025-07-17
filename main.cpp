@@ -12,7 +12,6 @@
  */
 
 #include "main.h"
-using namespace std;
 
 wxIMPLEMENT_APP(App);
 
@@ -40,12 +39,12 @@ MainFrame::MainFrame(const wxString &title) : wxFrame(nullptr, wxID_ANY, title)
     editor->SetMinSize(wxSize(600, 600));
     editorPanel->SetSizerAndFit(panelsizer);
 
-    wxBitmap bmpCopy(string(ICONS_PATH) + "icons8-copy-48.png", wxBITMAP_TYPE_PNG);
+    wxBitmap bmpCopy(std::string(ICONS_PATH) + "icons8-copy-48.png", wxBITMAP_TYPE_PNG);
     wxImage imgCopy = bmpCopy.ConvertToImage().Scale(20, 20, wxIMAGE_QUALITY_HIGH);
     wxBitmap bmpScalerCopy(imgCopy);
     wxBitmapButton *bmpBtn1 = new wxBitmapButton(buttonsPanel, ID_COPY_ALL_FIELDS, bmpScalerCopy, wxDefaultPosition, wxSize(40, 40));
 
-    wxBitmap bmpPaste(string(ICONS_PATH) + "icons8-paste-48.png", wxBITMAP_TYPE_PNG);
+    wxBitmap bmpPaste(std::string(ICONS_PATH) + "icons8-paste-48.png", wxBITMAP_TYPE_PNG);
     wxImage imgPaste = bmpPaste.ConvertToImage().Scale(20, 20, wxIMAGE_QUALITY_HIGH);
     wxBitmap imgScalerPaste(imgPaste);
     wxBitmapButton *bmpBtn2 = new wxBitmapButton(buttonsPanel, ID_PASTE_ALL_FIELDS, imgScalerPaste, wxDefaultPosition, wxSize(40, 40));
@@ -86,11 +85,15 @@ MainFrame::MainFrame(const wxString &title) : wxFrame(nullptr, wxID_ANY, title)
     wxMenu *info = new wxMenu;
     info->Append(wxID_INFO);
 
+    wxMenu *tools = new wxMenu;
+    tools->Append(ID_TOOLS_CHECK_PALINDROME, "Check Palindrome");
+
     wxMenuBar *menubar = new wxMenuBar;
     menubar->Append(file, "&File");
     menubar->Append(edit, "&Edit");
     menubar->Append(help, "&Help");
     menubar->Append(info, "&Info");
+    menubar->Append(tools, "&Tools");
 
     SetMenuBar(menubar);
 
@@ -102,8 +105,8 @@ MainFrame::MainFrame(const wxString &title) : wxFrame(nullptr, wxID_ANY, title)
     //
     Bind(wxEVT_MENU, &MainFrame::OnExit, this, wxID_EXIT);
     Bind(wxEVT_MENU, &MainFrame::OnAbout, this, wxID_ABOUT);
-    // Bind(wxEVT_MENU, &MainFrame::OnSaveAs, this, wxID_SAVEAS);
-    Bind(wxEVT_MENU, &MainFrame::OnSaveAsCustom, this, wxID_SAVEAS);
+    Bind(wxEVT_MENU, &MainFrame::OnSaveAs, this, wxID_SAVEAS);
+    Bind(wxEVT_MENU, &MainFrame::OnSaveAsCustom, this, wxID_SAVE);
     Bind(wxEVT_MENU, &MainFrame::OnOpen, this, wxID_OPEN);
     Bind(wxEVT_MENU, &MainFrame::OnUndo, this, wxID_UNDO);
     Bind(wxEVT_MENU, &MainFrame::OnRedo, this, wxID_REDO);
@@ -111,6 +114,9 @@ MainFrame::MainFrame(const wxString &title) : wxFrame(nullptr, wxID_ANY, title)
     Bind(wxEVT_MENU, &MainFrame::OnCopy, this, wxID_COPY);
     Bind(wxEVT_MENU, &MainFrame::OnPaste, this, wxID_PASTE);
     Bind(wxEVT_MENU, &MainFrame::onInfo, this, wxID_INFO);
+
+    Bind(wxEVT_MENU, &MainFrame::onCheckPalindrome, this, ID_TOOLS_CHECK_PALINDROME);
+
     Bind(wxEVT_BUTTON, &MainFrame::OnCopyCustom, this, ID_COPY_ALL_FIELDS);
     Bind(wxEVT_BUTTON, &MainFrame::OnPaste, this, ID_PASTE_ALL_FIELDS);
 }
@@ -156,13 +162,13 @@ void MainFrame::OnSaveAs(cmd &WXUNUSED(evt))
     file->Close();
 }
 
-string ReadFileToString(const fs::path &path)
+std::string ReadFileToString(const fs::path &path)
 {
-    ifstream file;
-    file.exceptions(ifstream::failbit | ifstream::badbit);
-    file.open(path, ios::binary);
+    std::ifstream file;
+    file.exceptions(std::ifstream::failbit | std::ifstream::badbit);
+    file.open(path, std::ios::binary);
 
-    stringstream buffer;
+    std::stringstream buffer;
     buffer << file.rdbuf();
     file.close();
 
@@ -177,11 +183,10 @@ void MainFrame::OnOpen(cmd &evt)
         return;
 
     wxString p = openFileDialog.GetPath();
-    fs::path path = fs::u8path(string(p.mb_str(wxConvUTF8)));
+    fs::path path = fs::u8path(std::string(p.mb_str(wxConvUTF8)));
 
     try
     {
-
         if (!fs::exists(path))
         {
             wxMessageBox("Read error: File does not exist.", "Error", wxOK | wxICON_ERROR);
@@ -194,7 +199,7 @@ void MainFrame::OnOpen(cmd &evt)
             return;
         }
 
-        string content = ReadFileToString(path);
+        std::string content = ReadFileToString(path);
         wxString wxContent = wxString::FromUTF8(content.c_str());
         this->editor->SetText(wxContent);
     }
@@ -216,21 +221,20 @@ void MainFrame::OnOpen(cmd &evt)
     }
 }
 
-void SaveStringToFile(const fs::path &filepath, const string &content)
+void SaveStringToFile(const fs::path &filepath, const std::string &content)
 {
-    ofstream file;
-    file.exceptions(ofstream::failbit | ofstream::badbit);
+    std::ofstream file;
+    file.exceptions(std::ofstream::failbit | std::ofstream::badbit);
 
-    file.open(filepath, ios::binary);
+    file.open(filepath, std::ios::binary);
     file << content;
     file.close();
 }
 
 void MainFrame::OnSaveAsCustom(cmd &evt)
 {
-
     wxString str = this->editor->GetText();
-    string text = string(str.mb_str(wxConvUTF8));
+    std::string text = std::string(str.mb_str(wxConvUTF8));
 
     wxFileDialog saveFileAs(this, "Save as", "", "", "Plain text files (*.*)|*.*", wxFD_SAVE | wxFD_OVERWRITE_PROMPT);
     if (saveFileAs.ShowModal() == wxID_CANCEL)
@@ -239,7 +243,7 @@ void MainFrame::OnSaveAsCustom(cmd &evt)
     }
 
     wxString p = saveFileAs.GetPath();
-    fs::path path = fs::u8path(string(p.mb_str(wxConvUTF8)));
+    fs::path path = fs::u8path(std::string(p.mb_str(wxConvUTF8)));
 
     try
     {
@@ -264,7 +268,7 @@ void MainFrame::OnSaveAsCustom(cmd &evt)
         SaveStringToFile(path, text);
         wxMessageBox("File saved successfully.", "Success", wxOK | wxICON_INFORMATION);
     }
-    catch (const ofstream::failure &)
+    catch (const std::ofstream::failure &)
     {
         wxMessageBox("Error writing file: cannot open or write to file. Check permissions and disk space.", "Error", wxOK | wxICON_ERROR);
     }
@@ -272,7 +276,7 @@ void MainFrame::OnSaveAsCustom(cmd &evt)
     {
         wxMessageBox("Filesystem error. Check the path and permissions.", "Error", wxOK | wxICON_ERROR);
     }
-    catch (const exception &)
+    catch (const std::exception &)
     {
         wxMessageBox("An error occurred while saving the file.", "Error", wxOK | wxICON_ERROR);
     }
@@ -307,7 +311,6 @@ void MainFrame::OnCopyCustom(cmd &evt)
     wxString text = this->editor->GetText();
     if (wxTheClipboard->Open())
     {
-        wxTheClipboard->Clear();
         wxTheClipboard->SetData(new wxTextDataObject(text));
         wxTheClipboard->Close();
     }
@@ -326,4 +329,39 @@ void MainFrame::onInfo(cmd &evt)
 {
     wxMessageBox("Task 1",
                  "Info", wxOK | wxICON_INFORMATION);
+}
+
+void MainFrame::onCheckPalindrome(cmd &evt)
+{
+    wxString str = this->editor->GetText();
+    std::string text = std::string(str.mb_str(wxConvUTF8));
+    if (isPalindrome(text))
+    {
+        wxMessageBox("Text is Palindrome",
+                     "Info", wxOK | wxICON_INFORMATION);
+        return;
+    }
+
+    wxMessageBox("Text is not  Palindrome",
+                 "Info", wxOK | wxICON_INFORMATION);
+}
+
+bool isPalindrome(const std::string &s)
+{
+    int left = 0, right = (int)s.size() - 1;
+
+    while (left < right)
+    {
+        while (left < right && std::isspace(s[left]))
+            left++;
+        while (left < right && std::isspace(s[right]))
+            right--;
+
+        if (std::tolower(s[left]) != std::tolower(s[right]))
+            return false;
+
+        left++;
+        right--;
+    }
+    return true;
 }

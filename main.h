@@ -25,6 +25,7 @@
 #include <filesystem>
 #include <fstream>
 #include <string>
+#include <cctype>
 
 #include "about.h"
 
@@ -32,6 +33,7 @@ namespace fs = std::filesystem;
 
 constexpr int ID_COPY_ALL_FIELDS  = wxID_HIGHEST + 1;
 constexpr int ID_PASTE_ALL_FIELDS = wxID_HIGHEST + 2;
+constexpr int ID_TOOLS_CHECK_PALINDROME  = wxID_HIGHEST + 3;
 
 constexpr char ICONS_PATH[] = "icons/";
 
@@ -78,11 +80,14 @@ private:
     void OnCopyCustom(cmd &evt);
     void OnCut(cmd &evt);
     void OnPaste(cmd &evt);
+    void onCheckPalindrome(cmd &evt);
 };
 
 
 void SaveStringToFile(const std::string& filepath, const std::string& content);
 std::string ReadFileToString(const fs::path& path);
+bool isPalindrome(const std::string& s);
+
 #endif // MAIN_H
 
 /**
