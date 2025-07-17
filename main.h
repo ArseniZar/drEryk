@@ -34,6 +34,7 @@ namespace fs = std::filesystem;
 constexpr int ID_COPY_ALL_FIELDS  = wxID_HIGHEST + 1;
 constexpr int ID_PASTE_ALL_FIELDS = wxID_HIGHEST + 2;
 constexpr int ID_TOOLS_CHECK_PALINDROME  = wxID_HIGHEST + 3;
+constexpr int ID_TOOLS_REPLACE_FOO_BAR  = wxID_HIGHEST + 4;
 
 constexpr char ICONS_PATH[] = "icons/";
 
@@ -81,12 +82,13 @@ private:
     void OnCut(cmd &evt);
     void OnPaste(cmd &evt);
     void onCheckPalindrome(cmd &evt);
+    void onReplaceFooOnBar(cmd &evt);
 };
 
 
 void SaveStringToFile(const std::string& filepath, const std::string& content);
 std::string ReadFileToString(const fs::path& path);
-bool isPalindrome(const std::string& s);
+bool IsPalindrome(const wxString& str);
 
 #endif // MAIN_H
 

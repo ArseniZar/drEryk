@@ -87,6 +87,7 @@ MainFrame::MainFrame(const wxString &title) : wxFrame(nullptr, wxID_ANY, title)
 
     wxMenu *tools = new wxMenu;
     tools->Append(ID_TOOLS_CHECK_PALINDROME, "Check Palindrome");
+    tools->Append(ID_TOOLS_REPLACE_FOO_BAR, "Replace foo on bar");
 
     wxMenuBar *menubar = new wxMenuBar;
     menubar->Append(file, "&File");
@@ -116,6 +117,7 @@ MainFrame::MainFrame(const wxString &title) : wxFrame(nullptr, wxID_ANY, title)
     Bind(wxEVT_MENU, &MainFrame::onInfo, this, wxID_INFO);
 
     Bind(wxEVT_MENU, &MainFrame::onCheckPalindrome, this, ID_TOOLS_CHECK_PALINDROME);
+    Bind(wxEVT_MENU, &MainFrame::onReplaceFooOnBar, this, ID_TOOLS_REPLACE_FOO_BAR);
 
     Bind(wxEVT_BUTTON, &MainFrame::OnCopyCustom, this, ID_COPY_ALL_FIELDS);
     Bind(wxEVT_BUTTON, &MainFrame::OnPaste, this, ID_PASTE_ALL_FIELDS);
@@ -334,8 +336,7 @@ void MainFrame::onInfo(cmd &evt)
 void MainFrame::onCheckPalindrome(cmd &evt)
 {
     wxString str = this->editor->GetText();
-    std::string text = std::string(str.mb_str(wxConvUTF8));
-    if (isPalindrome(text))
+    if (IsPalindrome(str))
     {
         wxMessageBox("Text is Palindrome",
                      "Info", wxOK | wxICON_INFORMATION);
@@ -346,22 +347,24 @@ void MainFrame::onCheckPalindrome(cmd &evt)
                  "Info", wxOK | wxICON_INFORMATION);
 }
 
-bool isPalindrome(const std::string &s)
+void MainFrame::onReplaceFooOnBar(cmd &evt)
 {
-    int left = 0, right = (int)s.size() - 1;
+    wxString str = this->editor->GetText();
+    str.Replace("foo", "bar", true);
+    this->editor->SetText(str);
+}
 
-    while (left < right)
+bool IsPalindrome(const wxString &str)
+{
+    wxString s = str;
+    s.MakeLower();
+    s.Replace(" ", "");
+
+    int len = s.Length();
+    for (int i = 0; i < len / 2; ++i)
     {
-        while (left < right && std::isspace(s[left]))
-            left++;
-        while (left < right && std::isspace(s[right]))
-            right--;
-
-        if (std::tolower(s[left]) != std::tolower(s[right]))
+        if (s[i] != s[len - 1 - i])
             return false;
-
-        left++;
-        right--;
     }
     return true;
 }
