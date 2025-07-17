@@ -99,7 +99,9 @@ MainFrame::MainFrame(const wxString& title) : wxFrame(nullptr, wxID_ANY, title)
     Bind(wxEVT_MENU, &MainFrame::OnOpenFile, this, wxID_OPEN); 
     Bind(wxEVT_MENU, &MainFrame::OnCopyToClipboard, this, ID_CopyToClipboard);
     Bind(wxEVT_MENU, &MainFrame::OnPasteFromClipboard, this, ID_PasteFromClipboard);
+    Bind(wxEVT_STC_CHANGE, &MainFrame::OnEditorChanged, this, editor->GetId()); 
 
+    OnEditorChanged(wxStyledTextEvent());
 }
 
 void MainFrame::OnExit(cmd& evt) {
@@ -322,4 +324,19 @@ void MainFrame::OnPasteFromClipboard(cmd& WXUNUSED(evt)){
     } else {
         wxMessageBox("Could not open the clipboard.", "Paste Error", wxOK | wxICON_ERROR); 
     }
+}
+
+void MainFrame::OnEditorChanged(const wxStyledTextEvent& WXUNUSED(evt)) { 
+    // 1. Получаем весь текст из редактора
+    wxString text = editor->GetText();
+
+    // 2. Получаем количество символов
+    size_t charCount = text.Length();
+
+    // 3. Форматируем строку для статусной строки
+    wxString statusText;
+    statusText.Printf("Char Count: %zu", charCount);
+
+    // 4. Обновляем статусную строку
+    SetStatusText(statusText);
 }

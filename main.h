@@ -72,6 +72,7 @@ private:
     void OnOpenFile(cmd& evt); 
     void OnCopyToClipboard (cmd& evt);
     void OnPasteFromClipboard (cmd& evt);
+    void OnEditorChanged(const wxStyledTextEvent& evt);
 };
 
 #endif // MAIN_H
