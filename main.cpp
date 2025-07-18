@@ -89,6 +89,7 @@ MainFrame::MainFrame(const wxString &title) : wxFrame(nullptr, wxID_ANY, title)
     tools->Append(ID_TOOLS_CHECK_PALINDROME, "Check Palindrome");
     tools->Append(ID_TOOLS_REPLACE_FOO_BAR, "Replace foo on bar");
     tools->Append(ID_TOOLS_REVERS_TEXT, "Reverse Text");
+    tools->Append(ID_TOOLS_SORT_LINES_BY_TEXT, "Sort Lines by Length");
 
     wxMenuBar *menubar = new wxMenuBar;
     menubar->Append(file, "&File");
@@ -114,11 +115,12 @@ MainFrame::MainFrame(const wxString &title) : wxFrame(nullptr, wxID_ANY, title)
     Bind(wxEVT_MENU, &MainFrame::OnCut, this, wxID_CUT);
     Bind(wxEVT_MENU, &MainFrame::OnCopy, this, wxID_COPY);
     Bind(wxEVT_MENU, &MainFrame::OnPaste, this, wxID_PASTE);
-    Bind(wxEVT_MENU, &MainFrame::onInfo, this, wxID_INFO);
+    Bind(wxEVT_MENU, &MainFrame::OnInfo, this, wxID_INFO);
 
-    Bind(wxEVT_MENU, &MainFrame::onCheckPalindrome, this, ID_TOOLS_CHECK_PALINDROME);
-    Bind(wxEVT_MENU, &MainFrame::onReplaceFooOnBar, this, ID_TOOLS_REPLACE_FOO_BAR);
-    Bind(wxEVT_MENU, &MainFrame::onReverseText, this, ID_TOOLS_REVERS_TEXT);
+    Bind(wxEVT_MENU, &MainFrame::OnCheckPalindrome, this, ID_TOOLS_CHECK_PALINDROME);
+    Bind(wxEVT_MENU, &MainFrame::OnReplaceFooOnBar, this, ID_TOOLS_REPLACE_FOO_BAR);
+    Bind(wxEVT_MENU, &MainFrame::OnReverseText, this, ID_TOOLS_REVERS_TEXT);
+    Bind(wxEVT_MENU, &MainFrame::OnSortLinesByLength, this, ID_TOOLS_SORT_LINES_BY_TEXT);
 
     Bind(wxEVT_BUTTON, &MainFrame::OnCopyCustom, this, ID_COPY_ALL_FIELDS);
     Bind(wxEVT_BUTTON, &MainFrame::OnPaste, this, ID_PASTE_ALL_FIELDS);
@@ -330,13 +332,13 @@ void MainFrame::OnPaste(cmd &evt)
     this->editor->Paste();
 }
 
-void MainFrame::onInfo(cmd &evt)
+void MainFrame::OnInfo(cmd &evt)
 {
     wxMessageBox("Task 1",
                  "Info", wxOK | wxICON_INFORMATION);
 }
 
-void MainFrame::onCheckPalindrome(cmd &evt)
+void MainFrame::OnCheckPalindrome(cmd &evt)
 {
     wxString str = this->editor->GetText();
     if (IsPalindrome(str))
@@ -350,7 +352,7 @@ void MainFrame::onCheckPalindrome(cmd &evt)
                  "Info", wxOK | wxICON_INFORMATION);
 }
 
-void MainFrame::onReplaceFooOnBar(cmd &evt)
+void MainFrame::OnReplaceFooOnBar(cmd &evt)
 {
     wxString text = this->editor->GetText();
     if (text.length() == 0)
@@ -369,17 +371,20 @@ void MainFrame::OnTextChanged(cmd &evt)
 
     size_t length = text.Length();
 
+    size_t totalLength = length;
+
+#ifdef _WIN32
     int lineCount = editor->GetLineCount();
     size_t crlfCount = (lineCount > 1) ? (lineCount - 1) : 0;
-
-    size_t totalLength = length + crlfCount;
+    totalLength += crlfCount; // добавляем символы CR для Windows
+#endif
 
     SetStatusText(wxString::Format("Characters (with CRLF): %zu", totalLength));
 
     evt.Skip();
 }
 
-void MainFrame ::onReverseText(cmd &evt)
+void MainFrame ::OnReverseText(cmd &evt)
 {
     wxString text = this->editor->GetText();
 
@@ -388,6 +393,30 @@ void MainFrame ::onReverseText(cmd &evt)
 
     std::reverse(text.begin(), text.end());
     this->editor->SetText(text);
+}
+
+void MainFrame::OnSortLinesByLength(cmd &evt)
+{
+    wxString text = this->editor->GetText();
+    wxArrayString lines = wxSplit(text, '\n', '\0');
+#ifdef _WIN32
+    for (wxString &line : lines)
+    {
+        if (!line.empty() && line.Last() == '\r')
+            line.RemoveLast();
+    }
+#endif
+
+    std::sort(lines.begin(), lines.end(), [](const wxString &a, const wxString &b)
+              { return a.length() < b.length(); });
+
+#ifdef _WIN32
+    wxString sortedText = wxJoin(lines, "\r\n");
+#else
+    wxString sortedText = wxJoin(lines, '\n');
+#endif
+
+    this->editor->SetText(sortedText);
 }
 
 bool IsPalindrome(const wxString &str)

@@ -38,6 +38,7 @@ enum MyCustomIDs
     ID_TOOLS_CHECK_PALINDROME = wxID_HIGHEST + 3,
     ID_TOOLS_REPLACE_FOO_BAR = wxID_HIGHEST + 4,
     ID_TOOLS_REVERS_TEXT =  wxID_HIGHEST + 5,
+    ID_TOOLS_SORT_LINES_BY_TEXT = wxID_HIGHEST + 6,
 };
 
 constexpr char ICONS_PATH[] = "icons/";
@@ -73,7 +74,7 @@ private:
     wxStyledTextCtrl *editor;
 
     // Event methods for menu items
-    void onInfo(cmd &evt);
+    void OnInfo(cmd &evt);
     void OnExit(cmd &evt);
     void OnAbout(cmd &evt);
     void OnSaveAs(cmd &WXUNUSED(evt));
@@ -85,10 +86,11 @@ private:
     void OnCopyCustom(cmd &evt);
     void OnCut(cmd &evt);
     void OnPaste(cmd &evt);
-    void onCheckPalindrome(cmd &evt);
-    void onReplaceFooOnBar(cmd &evt);
+    void OnCheckPalindrome(cmd &evt);
+    void OnReplaceFooOnBar(cmd &evt);
     void OnTextChanged(cmd &evt);
-    void onReverseText(cmd &evt);
+    void OnReverseText(cmd &evt);
+    void OnSortLinesByLength(cmd &evt);
 };
 
 void SaveStringToFile(const std::string &filepath, const std::string &content);
