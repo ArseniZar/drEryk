@@ -25,6 +25,9 @@ if(DOXYGEN_FOUND)
     set(DOXYGEN_PROJECT_NAME "UNotePad")
     set(DOXYGEN_PROJECT_NUMBER 1.0.1)
     set(DOXYGEN_PROJECT_BRIEF "A simple text editor application.")
+    set(CMAKE_CXX_STANDARD 17) # Using 17 is good for modern projects
+    set(CMAKE_CXX_STANDARD_REQUIRED True)
+    set(CMAKE_CXX_EXTENSIONS OFF)
 
     doxygen_add_docs(doxygen
         ${PROJECT_SOURCE_DIR}

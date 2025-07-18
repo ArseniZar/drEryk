@@ -21,6 +21,9 @@
 #include <wx/filename.h> // Добавлено для wxFileName
 #include <wx/stdpaths.h> // Добавлено для wxStandardPaths
 #include <wx/clipbrd.h>
+#include <wx/tokenzr.h> 
+#include <algorithm>
+#include <vector>
 #include "about.h"
 
 /**
@@ -47,7 +50,8 @@ enum
     ID_PasteFromClipboard,
     ID_CheckPalindrome,
     ID_ReplaceFooBar,
-    In_ReverseText
+    In_ReverseText,
+    ID_SortLines
 };
 
 /**
@@ -82,6 +86,8 @@ private:
     void OnCheckPalindrome(cmd &evt);
     void OnReplaceFooBar(cmd &evt);
     void OnReverseText (cmd &evt);
+    void OnSortLines (cmd &evt);
 };
+    bool CompareLength (const wxString& a, const wxString& b);
 
 #endif // MAIN_H

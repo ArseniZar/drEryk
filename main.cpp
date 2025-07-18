@@ -12,7 +12,6 @@
  */
 
 #include "main.h"
-
 wxIMPLEMENT_APP(App);
 
 bool App::OnInit()
@@ -78,6 +77,9 @@ MainFrame::MainFrame(const wxString &title) : wxFrame(nullptr, wxID_ANY, title)
     edit->AppendSeparator();
     edit->Append(ID_ReplaceFooBar, "Replace F&oo with Bar", "Replace all occurrences of 'foo' with 'bar'.");
     edit->Append(In_ReverseText, "&Reverse Text", "Reverse the entire text in the editor.");
+    edit->AppendSeparator();
+    edit->Append(ID_SortLines, "Sort L&ines by Length", "Sort all lines in the editor by their length."); 
+
 
     wxMenuBar *menubar = new wxMenuBar;
     menubar->Append(file, "&File");
@@ -109,6 +111,7 @@ MainFrame::MainFrame(const wxString &title) : wxFrame(nullptr, wxID_ANY, title)
     Bind(wxEVT_MENU, &MainFrame::OnCheckPalindrome, this, ID_CheckPalindrome);
     Bind(wxEVT_MENU, &MainFrame::OnReplaceFooBar, this, ID_ReplaceFooBar);
     Bind(wxEVT_MENU, &MainFrame::OnReverseText, this, In_ReverseText);
+    Bind(wxEVT_MENU, &MainFrame::OnSortLines, this, ID_SortLines);
 
     OnEditorChanged(wxStyledTextEvent());
 }
@@ -461,4 +464,53 @@ void MainFrame::OnReverseText(cmd &WXUNUSED(evt))
 
     wxMessageBox("Text has been successfully reversed.",
                  "Text Reverse Complete", wxOK | wxICON_INFORMATION);
+}
+
+void MainFrame::OnSortLines(cmd& WXUNUSED(evt)) {
+
+    wxString originalText = editor->GetText(); 
+
+    wxString lineEnding = "\n"; 
+    if (originalText.Contains("\r\n")) {
+        lineEnding = "\r\n"; 
+    } else if (originalText.Contains("\r") && !originalText.Contains("\n")) {
+        lineEnding = "\r"; 
+    }
+
+
+    wxArrayString linesArray = wxStringTokenize(originalText, "\n", wxTOKEN_RET_EMPTY_ALL);
+
+
+    bool originalEndsWithNewline = originalText.EndsWith("\n") || originalText.EndsWith("\r\n");
+
+    if (!linesArray.IsEmpty() && linesArray.Last().IsEmpty() && !originalEndsWithNewline) {
+        linesArray.RemoveAt(linesArray.GetCount() - 1);
+    }
+
+    std::sort(linesArray.begin(), linesArray.end(),
+              CompareLength);
+
+    wxString sortedText;
+    for (size_t i = 0; i < linesArray.GetCount(); ++i) {
+        sortedText += linesArray[i];
+        if (i < linesArray.GetCount() - 1) { 
+            sortedText += lineEnding;
+        }
+    }
+
+    if (originalEndsWithNewline && !sortedText.IsEmpty() && !sortedText.EndsWith(lineEnding)) {
+        sortedText += lineEnding;
+    } else if (originalText.IsEmpty()) {
+
+        sortedText = "";
+    }
+
+    editor->SetText(sortedText);
+
+    wxMessageBox("Lines have been sorted by length.",
+                 "Sort Complete", wxOK | wxICON_INFORMATION);
+}
+
+bool CompareLength(const wxString& a, const wxString& b){
+return a.Length() < b.Length();
 }
