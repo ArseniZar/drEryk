@@ -15,26 +15,27 @@
 
 wxIMPLEMENT_APP(App);
 
-bool App::OnInit() {
+bool App::OnInit()
+{
     MainFrame *frm = new MainFrame("UNotePad");
     frm->Show(true);
 
     return true;
 }
 
-MainFrame::MainFrame(const wxString& title) : wxFrame(nullptr, wxID_ANY, title)
+MainFrame::MainFrame(const wxString &title) : wxFrame(nullptr, wxID_ANY, title)
 {
 #if WIN32
     this->SetIcon(wxICON(appicon)); // Set the application icon
-#endif // WIN32
+#endif                              // WIN32
 
     //
     // Widgets
     //
 
-    wxBoxSizer *main = new wxBoxSizer(wxVERTICAL);        // The main sizer contains all the widgets
+    wxBoxSizer *main = new wxBoxSizer(wxVERTICAL); // The main sizer contains all the widgets
 
-    wxBoxSizer *panelsizer = new wxBoxSizer(wxVERTICAL);  // The sizer of the panel
+    wxBoxSizer *panelsizer = new wxBoxSizer(wxVERTICAL); // The sizer of the panel
 
     panelsizer->Add(editor, 1, wxALL | wxEXPAND, 0);
     editor->SetMinSize(wxSize(300, 300));
@@ -69,12 +70,13 @@ MainFrame::MainFrame(const wxString& title) : wxFrame(nullptr, wxID_ANY, title)
     edit->Append(wxID_COPY);
     edit->Append(wxID_CUT);
     edit->Append(wxID_PASTE);
-    edit->AppendSeparator(); 
+    edit->AppendSeparator();
     edit->Append(ID_CopyToClipboard, "Copy To Clipboard\tCtrl+Alt+C", "Copy all text from editor to clipboard");
     edit->Append(ID_PasteFromClipboard, "Paste From Clipboard\tCtrl+Alt+V", "Paste all text from editor to clipboard");
-    edit->AppendSeparator(); 
-    edit->Append(ID_CheckPalindrome, "Check &Palindrome\tCtrl+P", "Check if the current text is a palindrome."); 
-
+    edit->AppendSeparator();
+    edit->Append(ID_CheckPalindrome, "Check &Palindrome\tCtrl+P", "Check if the current text is a palindrome.");
+    edit->AppendSeparator();
+    edit->Append(ID_ReplaceFooBar, "Replace F&oo with Bar", "Replace all occurrences of 'foo' with 'bar'.");
 
     wxMenuBar *menubar = new wxMenuBar;
     menubar->Append(file, "&File");
@@ -99,108 +101,123 @@ MainFrame::MainFrame(const wxString& title) : wxFrame(nullptr, wxID_ANY, title)
     Bind(wxEVT_MENU, &MainFrame::OnPaste, this, wxID_PASTE);
     Bind(wxEVT_MENU, &MainFrame::OnMyMessage, this, ID_MyMessage);
     Bind(wxEVT_MENU, &MainFrame::OnSaveAsCustom, this, ID_SaveAsCustom);
-    Bind(wxEVT_MENU, &MainFrame::OnOpenFile, this, wxID_OPEN); 
+    Bind(wxEVT_MENU, &MainFrame::OnOpenFile, this, wxID_OPEN);
     Bind(wxEVT_MENU, &MainFrame::OnCopyToClipboard, this, ID_CopyToClipboard);
     Bind(wxEVT_MENU, &MainFrame::OnPasteFromClipboard, this, ID_PasteFromClipboard);
-    Bind(wxEVT_STC_CHANGE, &MainFrame::OnEditorChanged, this, editor->GetId()); 
+    Bind(wxEVT_STC_CHANGE, &MainFrame::OnEditorChanged, this, editor->GetId());
     Bind(wxEVT_MENU, &MainFrame::OnCheckPalindrome, this, ID_CheckPalindrome);
-
+    Bind(wxEVT_MENU, &MainFrame::OnReplaceFooBar, this, ID_ReplaceFooBar);
 
     OnEditorChanged(wxStyledTextEvent());
 }
 
-void MainFrame::OnExit(cmd& evt) {
+void MainFrame::OnExit(cmd &evt)
+{
     Close(true);
 }
 
-void MainFrame::OnAbout(cmd& evt) {
+void MainFrame::OnAbout(cmd &evt)
+{
     AboutFrame *about = new AboutFrame(this, "About");
     about->Show(true);
 }
 
-void MainFrame::OnSaveAs(cmd& WXUNUSED(evt)) {
+void MainFrame::OnSaveAs(cmd &WXUNUSED(evt))
+{
 
     // The text of the editor
     wxString str = this->editor->GetText();
 
     // Getting the path
     wxFileDialog saveFileAs(this, "Save as", "", "", "Plain text files (*.txt)|*.txt", wxFD_SAVE | wxFD_OVERWRITE_PROMPT);
-    if(saveFileAs.ShowModal() == wxID_CANCEL) {
+    if (saveFileAs.ShowModal() == wxID_CANCEL)
+    {
         return;
     }
     auto path = saveFileAs.GetPath();
 
     // Write the str to the file
     wxFileOutputStream output(path);
-    if(!output.IsOk()) {
+    if (!output.IsOk())
+    {
         wxMessageBox("Unable to save the file");
         return;
     }
 
     wxFile *file = new wxFile(path, wxFile::write);
-    if(file->IsOpened()) {
+    if (file->IsOpened())
+    {
         file->Write(str);
     }
     file->Close();
-
 }
-
 
 //
 // The following forward declared functions are self-explanatory :)
 //
 
-void MainFrame::OnUndo(cmd& evt) {
+void MainFrame::OnUndo(cmd &evt)
+{
     this->editor->Undo();
 }
 
-void MainFrame::OnRedo(cmd& evt) {
+void MainFrame::OnRedo(cmd &evt)
+{
     this->editor->Redo();
 }
 
-void MainFrame::OnCut(cmd& evt) {
+void MainFrame::OnCut(cmd &evt)
+{
     this->editor->Cut();
 }
 
-void MainFrame::OnCopy(cmd& evt) {
+void MainFrame::OnCopy(cmd &evt)
+{
     this->editor->Copy();
 }
 
-void MainFrame::OnPaste(cmd& evt) {
+void MainFrame::OnPaste(cmd &evt)
+{
     this->editor->Paste();
 }
 
-void MainFrame::OnMyMessage(cmd& evt) {
+void MainFrame::OnMyMessage(cmd &evt)
+{
     wxMessageBox("Вітаю, зрабілася???", "Фіксіраванве паведамленне", wxOK | wxICON_INFORMATION);
 }
 
-void MainFrame::OnSaveAsCustom(cmd& WXUNUSED(evt)) {
+void MainFrame::OnSaveAsCustom(cmd &WXUNUSED(evt))
+{
     wxString content_to_save = this->editor->GetText();
 
     wxFileDialog saveFileDialog(this, "Save file as", "", "",
                                 "Text files (*.txt)|*.txt|All files (*.*)|*.*",
                                 wxFD_SAVE | wxFD_OVERWRITE_PROMPT);
 
-    if (saveFileDialog.ShowModal() == wxID_CANCEL) {
+    if (saveFileDialog.ShowModal() == wxID_CANCEL)
+    {
         return;
     }
 
     wxString filePath = saveFileDialog.GetPath();
 
-    if (filePath.IsEmpty()) {
+    if (filePath.IsEmpty())
+    {
         wxMessageBox("No file path selected. Please try again.", "Save Error", wxOK | wxICON_ERROR);
         return;
     }
 
     wxFileName fn(filePath);
-    if (fn.DirExists()) {
+    if (fn.DirExists())
+    {
         wxMessageBox("The specified path is a directory. Please provide a file name, not a directory.", "Save Error", wxOK | wxICON_ERROR);
         return;
     }
 
     wxFileOutputStream outputStream(filePath);
 
-    if (!outputStream.IsOk()) {
+    if (!outputStream.IsOk())
+    {
         wxString errorMessage;
         errorMessage.Printf("Failed to open file for writing: \"%s\".\nPossible reasons: no write permissions, invalid file name, or file is in use by another application.", filePath);
         wxMessageBox(errorMessage, "File Write Error", wxOK | wxICON_ERROR);
@@ -209,7 +226,8 @@ void MainFrame::OnSaveAsCustom(cmd& WXUNUSED(evt)) {
 
     outputStream.Write(content_to_save.mb_str(), content_to_save.length());
 
-    if (!outputStream.IsOk()) {
+    if (!outputStream.IsOk())
+    {
         wxMessageBox("An error occurred during writing data to the file.", "Write Error", wxOK | wxICON_ERROR);
         return;
     }
@@ -217,13 +235,15 @@ void MainFrame::OnSaveAsCustom(cmd& WXUNUSED(evt)) {
     wxMessageBox("File saved successfully!", "Save Complete", wxOK | wxICON_INFORMATION);
 }
 
-void MainFrame::OnOpenFile(cmd& WXUNUSED(evt)) {
+void MainFrame::OnOpenFile(cmd &WXUNUSED(evt))
+{
     wxFileDialog openFileDialog(this, "Open file", "", "",
                                 "Text files (*.txt)|*.txt|All files (*.*)|*.*", // Фильтры файлов
                                 wxFD_OPEN | wxFD_FILE_MUST_EXIST);
 
     // диалог
-    if (openFileDialog.ShowModal() == wxID_CANCEL) {
+    if (openFileDialog.ShowModal() == wxID_CANCEL)
+    {
         return;
     }
 
@@ -233,8 +253,8 @@ void MainFrame::OnOpenFile(cmd& WXUNUSED(evt)) {
     wxString debugLogPath = wxStandardPaths::Get().GetTempDir() + wxFileName::GetPathSeparator() + "notepad_debug.log";
     wxFile debugLogFile;
 
-
-    if (debugLogFile.Open(debugLogPath, wxFile::write_append)) {
+    if (debugLogFile.Open(debugLogPath, wxFile::write_append))
+    {
         debugLogFile.Write(wxString::Format("DEBUG: [%s] Attempting to open file.\n", wxDateTime::Now().FormatISOTime()));
         debugLogFile.Write(wxString::Format("DEBUG: Selected file path: \"%s\"\n", filePath));
 
@@ -244,23 +264,26 @@ void MainFrame::OnOpenFile(cmd& WXUNUSED(evt)) {
         debugLogFile.Write(wxString::Format("DEBUG: wxFileName is an absolute path: %d\n", fn.IsAbsolute()));
         debugLogFile.Write(wxString::Format("DEBUG: wxFileName is valid: %d\n", fn.IsOk()));
         debugLogFile.Close();
-
-    } else {
+    }
+    else
+    {
         wxMessageBox(wxString::Format("Could not open debug log file for writing: \"%s\"\n"
-                                      "Check permissions or if the path is valid.", debugLogPath),
+                                      "Check permissions or if the path is valid.",
+                                      debugLogPath),
                      "Debug Error - File Write Failed", wxOK | wxICON_ERROR);
     }
 
-
     // Проверка на пустой путь (дополнительная защита)
-    if (filePath.IsEmpty()) {
+    if (filePath.IsEmpty())
+    {
         wxMessageBox("No file path selected. Please try again.", "Open Error", wxOK | wxICON_ERROR);
         return;
     }
 
     // Проверка, является ли путь к файлу директорией
     wxFileName fn(filePath);
-    if (fn.DirExists() && !fn.FileExists()) {
+    if (fn.DirExists() && !fn.FileExists())
+    {
         wxMessageBox("The selected path is a directory. Please select a file, not a directory.", "Open Error", wxOK | wxICON_ERROR);
         return;
     }
@@ -269,7 +292,8 @@ void MainFrame::OnOpenFile(cmd& WXUNUSED(evt)) {
     wxFileInputStream inputStream(filePath);
 
     // Проверяем, успешно ли открыт поток для чтения
-    if (!inputStream.IsOk()) {
+    if (!inputStream.IsOk())
+    {
         wxString errorMessage;
         errorMessage.Printf("Failed to open file: \"%s\".\nPossible reasons: file does not exist, no read permissions, or file is in use.", filePath);
         wxMessageBox(errorMessage, "File Open Error", wxOK | wxICON_ERROR);
@@ -281,12 +305,14 @@ void MainFrame::OnOpenFile(cmd& WXUNUSED(evt)) {
     char buffer[4096]; // Буфер для чтения частями
     size_t bytesRead;
 
-    while ((bytesRead = inputStream.Read(buffer, sizeof(buffer)).LastRead()) > 0) {
+    while ((bytesRead = inputStream.Read(buffer, sizeof(buffer)).LastRead()) > 0)
+    {
         fileContent += wxString(buffer, bytesRead);
     }
 
     // Проверяем, произошли ли ошибки чтения (например, во время чтения)
-    if (!inputStream.IsOk() && inputStream.GetLastError() != wxSTREAM_EOF) { 
+    if (!inputStream.IsOk() && inputStream.GetLastError() != wxSTREAM_EOF)
+    {
         wxMessageBox("An error occurred during reading data from the file.", "Read Error", wxOK | wxICON_ERROR);
         return;
     }
@@ -297,41 +323,53 @@ void MainFrame::OnOpenFile(cmd& WXUNUSED(evt)) {
     wxMessageBox("File opened successfully!", "Open Complete", wxOK | wxICON_INFORMATION);
 }
 
-void MainFrame::OnCopyToClipboard(cmd& WXUNUSED(evt)) {
+void MainFrame::OnCopyToClipboard(cmd &WXUNUSED(evt))
+{
     wxString textToCopy = editor->GetText(); // Получаем весь текст из редактора
 
-    if (wxTheClipboard->Open()) { 
-      
+    if (wxTheClipboard->Open())
+    {
+
         wxTheClipboard->SetData(new wxTextDataObject(textToCopy));
-        wxTheClipboard->Close(); 
-        SetStatusText("All text copied to clipboard!"); 
-    } else {
+        wxTheClipboard->Close();
+        SetStatusText("All text copied to clipboard!");
+    }
+    else
+    {
         wxMessageBox("Could not open the clipboard.", "Error", wxOK | wxICON_ERROR);
     }
 }
 
-void MainFrame::OnPasteFromClipboard(cmd& WXUNUSED(evt)){
-    if (wxTheClipboard->Open()) { 
-        if (wxTheClipboard->IsSupported(wxDF_TEXT)) { 
+void MainFrame::OnPasteFromClipboard(cmd &WXUNUSED(evt))
+{
+    if (wxTheClipboard->Open())
+    {
+        if (wxTheClipboard->IsSupported(wxDF_TEXT))
+        {
             wxTextDataObject data;
-            wxTheClipboard->GetData(data); // Получаем данные из буфера обмена в объект 'data'
+            wxTheClipboard->GetData(data);         // Получаем данные из буфера обмена в объект 'data'
             wxString textToPaste = data.GetText(); // Извлекаем сам текст из объекта 'data'
 
             // Вставляем полученный текст в редактор.
-        
+
             this->editor->ReplaceSelection(textToPaste);
 
-            SetStatusText("Text pasted from clipboard."); 
-        } else {
-            wxMessageBox("No text data found on clipboard.", "Paste Error", wxOK | wxICON_INFORMATION); 
+            SetStatusText("Text pasted from clipboard.");
         }
-        wxTheClipboard->Close(); 
-    } else {
-        wxMessageBox("Could not open the clipboard.", "Paste Error", wxOK | wxICON_ERROR); 
+        else
+        {
+            wxMessageBox("No text data found on clipboard.", "Paste Error", wxOK | wxICON_INFORMATION);
+        }
+        wxTheClipboard->Close();
+    }
+    else
+    {
+        wxMessageBox("Could not open the clipboard.", "Paste Error", wxOK | wxICON_ERROR);
     }
 }
 
-void MainFrame::OnEditorChanged(const wxStyledTextEvent& WXUNUSED(evt)) { 
+void MainFrame::OnEditorChanged(const wxStyledTextEvent &WXUNUSED(evt))
+{
     // 1. Получаем весь текст из редактора
     wxString text = editor->GetText();
 
@@ -346,38 +384,62 @@ void MainFrame::OnEditorChanged(const wxStyledTextEvent& WXUNUSED(evt)) {
     SetStatusText(statusText);
 }
 
+void MainFrame::OnCheckPalindrome(cmd &WXUNUSED(evt))
+{
+    wxString text = editor->GetText();
 
-void MainFrame::OnCheckPalindrome(cmd& WXUNUSED(evt)){
-    wxString text = editor ->GetText(); 
-    
     wxString normalizedText;
 
-    normalizedText.reserve(text.length()); 
+    normalizedText.reserve(text.length());
 
-    for (wxChar ch : text) {
-        if (wxIsalnum(ch)) { 
-            normalizedText += wxString(ch).Lower(); 
+    for (wxChar ch : text)
+    {
+        if (wxIsalnum(ch))
+        {
+            normalizedText += wxString(ch).Lower();
         }
     }
 
-    
     bool isPalindrome = true;
     size_t len = normalizedText.Length();
-    if (len == 0) {
-        isPalindrome = false; 
-    } else {
-        for (size_t i = 0; i < len / 2; ++i) {
-            if (normalizedText[i] != normalizedText[len - 1 - i]) {
+    if (len == 0)
+    {
+        isPalindrome = false;
+    }
+    else
+    {
+        for (size_t i = 0; i < len / 2; ++i)
+        {
+            if (normalizedText[i] != normalizedText[len - 1 - i])
+            {
                 isPalindrome = false;
                 break;
             }
         }
     }
 
-
-    if (isPalindrome) {
-       wxMessageBox("The text is a palindrome!", "Palindrome Check", wxOK | wxICON_INFORMATION);
-    } else {
+    if (isPalindrome)
+    {
+        wxMessageBox("The text is a palindrome!", "Palindrome Check", wxOK | wxICON_INFORMATION);
+    }
+    else
+    {
         wxMessageBox("The text is NOT a palindrome.", "Palindrome Check", wxOK | wxICON_INFORMATION);
     }
+}
+
+void MainFrame::OnReplaceFooBar(cmd &WXUNUSED(evt))
+{
+
+    wxString originalText = editor->GetText();
+    wxString searchText = "foo";
+    wxString replaceText = "bar";
+    wxString newText = originalText;
+
+    newText.Replace(searchText, replaceText);
+
+    editor->SetText(newText);
+
+    wxMessageBox("All occurrences of 'foo' have been replaced with 'bar'.",
+                 "Replace Complete", wxOK | wxICON_INFORMATION);
 }

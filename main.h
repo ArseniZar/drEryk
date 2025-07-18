@@ -13,20 +13,21 @@
 
 #include <wx/wxprec.h>
 #ifndef WX_PRECOMP
-    #include <wx/wx.h>
+#include <wx/wx.h>
 #endif
 #include <wx/stc/stc.h>
 #include <wx/file.h>
 #include <wx/wfstream.h>
-#include <wx/filename.h>   // Добавлено для wxFileName
-#include <wx/stdpaths.h>   // Добавлено для wxStandardPaths
+#include <wx/filename.h> // Добавлено для wxFileName
+#include <wx/stdpaths.h> // Добавлено для wxStandardPaths
 #include <wx/clipbrd.h>
 #include "about.h"
 
 /**
  * @brief The main App class
  */
-class App : public wxApp {
+class App : public wxApp
+{
 public:
     /**
      * @brief The application entry point
@@ -38,44 +39,47 @@ public:
 
 wxDECLARE_APP(App);
 
-enum {
+enum
+{
     ID_MyMessage = wxID_HIGHEST + 1,
     ID_SaveAsCustom = wxID_HIGHEST + 2,
     ID_CopyToClipboard = wxID_HIGHEST + 3,
     ID_PasteFromClipboard,
-    ID_CheckPalindrome 
+    ID_CheckPalindrome,
+    ID_ReplaceFooBar
 };
 
 /**
  * @brief The main window object.
  *
  */
-class MainFrame : public wxFrame {
+class MainFrame : public wxFrame
+{
 public:
-    MainFrame(const wxString& title);
+    MainFrame(const wxString &title);
 
 private:
     using cmd = wxCommandEvent;
-    wxPanel *panel = new wxPanel(this, wxID_ANY); // The main panel
+    wxPanel *panel = new wxPanel(this, wxID_ANY);                                        // The main panel
     wxStyledTextCtrl *editor = new wxStyledTextCtrl(panel, wxID_ANY, wxDefaultPosition); // The text editor
 
     // Event methods for menu items
-    void OnExit(cmd& evt);
-    void OnAbout(cmd& evt);
-    void OnSaveAs(cmd& WXUNUSED(evt));
-    void OnUndo(cmd& evt);
-    void OnRedo(cmd& evt);
-    void OnCopy(cmd& evt);
-    void OnCut(cmd& evt);
-    void OnPaste(cmd& evt);
-    void OnMyMessage(cmd& evt);
-    void OnSaveAsCustom(cmd& evt);
-    void OnOpenFile(cmd& evt); 
-    void OnCopyToClipboard (cmd& evt);
-    void OnPasteFromClipboard (cmd& evt);
-    void OnEditorChanged(const wxStyledTextEvent& evt);
-    void OnCheckPalindrome (cmd& evt);
-
+    void OnExit(cmd &evt);
+    void OnAbout(cmd &evt);
+    void OnSaveAs(cmd &WXUNUSED(evt));
+    void OnUndo(cmd &evt);
+    void OnRedo(cmd &evt);
+    void OnCopy(cmd &evt);
+    void OnCut(cmd &evt);
+    void OnPaste(cmd &evt);
+    void OnMyMessage(cmd &evt);
+    void OnSaveAsCustom(cmd &evt);
+    void OnOpenFile(cmd &evt);
+    void OnCopyToClipboard(cmd &evt);
+    void OnPasteFromClipboard(cmd &evt);
+    void OnEditorChanged(const wxStyledTextEvent &evt);
+    void OnCheckPalindrome(cmd &evt);
+    void OnReplaceFooBar(cmd &evt);
 };
 
 #endif // MAIN_H
