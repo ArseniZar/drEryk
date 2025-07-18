@@ -42,7 +42,8 @@ enum {
     ID_MyMessage = wxID_HIGHEST + 1,
     ID_SaveAsCustom = wxID_HIGHEST + 2,
     ID_CopyToClipboard = wxID_HIGHEST + 3,
-    ID_PasteFromClipboard 
+    ID_PasteFromClipboard,
+    ID_CheckPalindrome 
 };
 
 /**
@@ -73,6 +74,8 @@ private:
     void OnCopyToClipboard (cmd& evt);
     void OnPasteFromClipboard (cmd& evt);
     void OnEditorChanged(const wxStyledTextEvent& evt);
+    void OnCheckPalindrome (cmd& evt);
+
 };
 
 #endif // MAIN_H

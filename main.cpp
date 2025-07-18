@@ -72,6 +72,9 @@ MainFrame::MainFrame(const wxString& title) : wxFrame(nullptr, wxID_ANY, title)
     edit->AppendSeparator(); 
     edit->Append(ID_CopyToClipboard, "Copy To Clipboard\tCtrl+Alt+C", "Copy all text from editor to clipboard");
     edit->Append(ID_PasteFromClipboard, "Paste From Clipboard\tCtrl+Alt+V", "Paste all text from editor to clipboard");
+    edit->AppendSeparator(); 
+    edit->Append(ID_CheckPalindrome, "Check &Palindrome\tCtrl+P", "Check if the current text is a palindrome."); 
+
 
     wxMenuBar *menubar = new wxMenuBar;
     menubar->Append(file, "&File");
@@ -100,6 +103,8 @@ MainFrame::MainFrame(const wxString& title) : wxFrame(nullptr, wxID_ANY, title)
     Bind(wxEVT_MENU, &MainFrame::OnCopyToClipboard, this, ID_CopyToClipboard);
     Bind(wxEVT_MENU, &MainFrame::OnPasteFromClipboard, this, ID_PasteFromClipboard);
     Bind(wxEVT_STC_CHANGE, &MainFrame::OnEditorChanged, this, editor->GetId()); 
+    Bind(wxEVT_MENU, &MainFrame::OnCheckPalindrome, this, ID_CheckPalindrome);
+
 
     OnEditorChanged(wxStyledTextEvent());
 }
@@ -339,4 +344,40 @@ void MainFrame::OnEditorChanged(const wxStyledTextEvent& WXUNUSED(evt)) {
 
     // 4. Обновляем статусную строку
     SetStatusText(statusText);
+}
+
+
+void MainFrame::OnCheckPalindrome(cmd& WXUNUSED(evt)){
+    wxString text = editor ->GetText(); 
+    
+    wxString normalizedText;
+
+    normalizedText.reserve(text.length()); 
+
+    for (wxChar ch : text) {
+        if (wxIsalnum(ch)) { 
+            normalizedText += wxString(ch).Lower(); 
+        }
+    }
+
+    
+    bool isPalindrome = true;
+    size_t len = normalizedText.Length();
+    if (len == 0) {
+        isPalindrome = false; 
+    } else {
+        for (size_t i = 0; i < len / 2; ++i) {
+            if (normalizedText[i] != normalizedText[len - 1 - i]) {
+                isPalindrome = false;
+                break;
+            }
+        }
+    }
+
+
+    if (isPalindrome) {
+       wxMessageBox("The text is a palindrome!", "Palindrome Check", wxOK | wxICON_INFORMATION);
+    } else {
+        wxMessageBox("The text is NOT a palindrome.", "Palindrome Check", wxOK | wxICON_INFORMATION);
+    }
 }
