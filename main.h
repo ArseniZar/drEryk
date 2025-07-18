@@ -31,10 +31,14 @@
 
 namespace fs = std::filesystem;
 
-constexpr int ID_COPY_ALL_FIELDS  = wxID_HIGHEST + 1;
-constexpr int ID_PASTE_ALL_FIELDS = wxID_HIGHEST + 2;
-constexpr int ID_TOOLS_CHECK_PALINDROME  = wxID_HIGHEST + 3;
-constexpr int ID_TOOLS_REPLACE_FOO_BAR  = wxID_HIGHEST + 4;
+enum MyCustomIDs
+{
+    ID_COPY_ALL_FIELDS = wxID_HIGHEST + 1,
+    ID_PASTE_ALL_FIELDS = wxID_HIGHEST + 2,
+    ID_TOOLS_CHECK_PALINDROME = wxID_HIGHEST + 3,
+    ID_TOOLS_REPLACE_FOO_BAR = wxID_HIGHEST + 4,
+    ID_TOOLS_REVERS_TEXT =  wxID_HIGHEST + 5,
+};
 
 constexpr char ICONS_PATH[] = "icons/";
 
@@ -64,8 +68,8 @@ public:
     MainFrame(const wxString &title);
 
 private:
-    using cmd = wxCommandEvent; 
-    
+    using cmd = wxCommandEvent;
+
     wxStyledTextCtrl *editor;
 
     // Event methods for menu items
@@ -83,14 +87,13 @@ private:
     void OnPaste(cmd &evt);
     void onCheckPalindrome(cmd &evt);
     void onReplaceFooOnBar(cmd &evt);
-    void OnTextChanged(wxStyledTextEvent& evt);
-
+    void OnTextChanged(cmd &evt);
+    void onReverseText(cmd &evt);
 };
 
-
-void SaveStringToFile(const std::string& filepath, const std::string& content);
-std::string ReadFileToString(const fs::path& path);
-bool IsPalindrome(const wxString& str);
+void SaveStringToFile(const std::string &filepath, const std::string &content);
+std::string ReadFileToString(const fs::path &path);
+bool IsPalindrome(const wxString &str);
 
 #endif // MAIN_H
 

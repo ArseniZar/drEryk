@@ -88,6 +88,7 @@ MainFrame::MainFrame(const wxString &title) : wxFrame(nullptr, wxID_ANY, title)
     wxMenu *tools = new wxMenu;
     tools->Append(ID_TOOLS_CHECK_PALINDROME, "Check Palindrome");
     tools->Append(ID_TOOLS_REPLACE_FOO_BAR, "Replace foo on bar");
+    tools->Append(ID_TOOLS_REVERS_TEXT, "Reverse Text");
 
     wxMenuBar *menubar = new wxMenuBar;
     menubar->Append(file, "&File");
@@ -117,6 +118,7 @@ MainFrame::MainFrame(const wxString &title) : wxFrame(nullptr, wxID_ANY, title)
 
     Bind(wxEVT_MENU, &MainFrame::onCheckPalindrome, this, ID_TOOLS_CHECK_PALINDROME);
     Bind(wxEVT_MENU, &MainFrame::onReplaceFooOnBar, this, ID_TOOLS_REPLACE_FOO_BAR);
+    Bind(wxEVT_MENU, &MainFrame::onReverseText, this, ID_TOOLS_REVERS_TEXT);
 
     Bind(wxEVT_BUTTON, &MainFrame::OnCopyCustom, this, ID_COPY_ALL_FIELDS);
     Bind(wxEVT_BUTTON, &MainFrame::OnPaste, this, ID_PASTE_ALL_FIELDS);
@@ -350,27 +352,43 @@ void MainFrame::onCheckPalindrome(cmd &evt)
 
 void MainFrame::onReplaceFooOnBar(cmd &evt)
 {
-    wxString str = this->editor->GetText();
-    str.Replace("foo", "bar", true);
-    this->editor->SetText(str);
+    wxString text = this->editor->GetText();
+    if (text.length() == 0)
+        return;
+
+    text.Replace("foo", "bar", true);
+    this->editor->SetText(text);
 }
 
-void MainFrame::OnTextChanged(wxStyledTextEvent& evt)
+void MainFrame::OnTextChanged(cmd &evt)
 {
     wxString text = this->editor->GetText();
+
+    if (text.length() == 0)
+        return;
 
     size_t length = text.Length();
 
     int lineCount = editor->GetLineCount();
     size_t crlfCount = (lineCount > 1) ? (lineCount - 1) : 0;
 
-    size_t totalLength = length + crlfCount; 
+    size_t totalLength = length + crlfCount;
 
     SetStatusText(wxString::Format("Characters (with CRLF): %zu", totalLength));
 
     evt.Skip();
 }
 
+void MainFrame ::onReverseText(cmd &evt)
+{
+    wxString text = this->editor->GetText();
+
+    if (text.length() == 0)
+        return;
+
+    std::reverse(text.begin(), text.end());
+    this->editor->SetText(text);
+}
 
 bool IsPalindrome(const wxString &str)
 {
