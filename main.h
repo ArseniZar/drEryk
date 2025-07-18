@@ -46,7 +46,8 @@ enum
     ID_CopyToClipboard = wxID_HIGHEST + 3,
     ID_PasteFromClipboard,
     ID_CheckPalindrome,
-    ID_ReplaceFooBar
+    ID_ReplaceFooBar,
+    In_ReverseText
 };
 
 /**
@@ -80,6 +81,7 @@ private:
     void OnEditorChanged(const wxStyledTextEvent &evt);
     void OnCheckPalindrome(cmd &evt);
     void OnReplaceFooBar(cmd &evt);
+    void OnReverseText (cmd &evt);
 };
 
 #endif // MAIN_H

@@ -77,6 +77,7 @@ MainFrame::MainFrame(const wxString &title) : wxFrame(nullptr, wxID_ANY, title)
     edit->Append(ID_CheckPalindrome, "Check &Palindrome\tCtrl+P", "Check if the current text is a palindrome.");
     edit->AppendSeparator();
     edit->Append(ID_ReplaceFooBar, "Replace F&oo with Bar", "Replace all occurrences of 'foo' with 'bar'.");
+    edit->Append(In_ReverseText, "&Reverse Text", "Reverse the entire text in the editor.");
 
     wxMenuBar *menubar = new wxMenuBar;
     menubar->Append(file, "&File");
@@ -107,6 +108,7 @@ MainFrame::MainFrame(const wxString &title) : wxFrame(nullptr, wxID_ANY, title)
     Bind(wxEVT_STC_CHANGE, &MainFrame::OnEditorChanged, this, editor->GetId());
     Bind(wxEVT_MENU, &MainFrame::OnCheckPalindrome, this, ID_CheckPalindrome);
     Bind(wxEVT_MENU, &MainFrame::OnReplaceFooBar, this, ID_ReplaceFooBar);
+    Bind(wxEVT_MENU, &MainFrame::OnReverseText, this, In_ReverseText);
 
     OnEditorChanged(wxStyledTextEvent());
 }
@@ -442,4 +444,21 @@ void MainFrame::OnReplaceFooBar(cmd &WXUNUSED(evt))
 
     wxMessageBox("All occurrences of 'foo' have been replaced with 'bar'.",
                  "Replace Complete", wxOK | wxICON_INFORMATION);
+}
+
+void MainFrame::OnReverseText(cmd &WXUNUSED(evt))
+{
+    wxString originalText = editor->GetText();
+    wxString reversedText;
+    reversedText.reserve(originalText.Length());
+
+    for (int i = originalText.Length() - 1; i >= 0; --i)
+    {
+        reversedText += originalText[i];
+    }
+
+    editor->SetText(reversedText);
+
+    wxMessageBox("Text has been successfully reversed.",
+                 "Text Reverse Complete", wxOK | wxICON_INFORMATION);
 }
