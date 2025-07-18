@@ -99,7 +99,6 @@ MainFrame::MainFrame(const wxString &title) : wxFrame(nullptr, wxID_ANY, title)
     SetMenuBar(menubar);
 
     CreateStatusBar();
-    SetStatusText("Welcome to the lightweight text editor: UNotePad");
 
     //
     // Event bindings
@@ -121,6 +120,8 @@ MainFrame::MainFrame(const wxString &title) : wxFrame(nullptr, wxID_ANY, title)
 
     Bind(wxEVT_BUTTON, &MainFrame::OnCopyCustom, this, ID_COPY_ALL_FIELDS);
     Bind(wxEVT_BUTTON, &MainFrame::OnPaste, this, ID_PASTE_ALL_FIELDS);
+
+    Bind(wxEVT_STC_CHANGE, &MainFrame::OnTextChanged, this, editor->GetId());
 }
 
 void MainFrame::OnExit(cmd &evt)
@@ -353,6 +354,23 @@ void MainFrame::onReplaceFooOnBar(cmd &evt)
     str.Replace("foo", "bar", true);
     this->editor->SetText(str);
 }
+
+void MainFrame::OnTextChanged(wxStyledTextEvent& evt)
+{
+    wxString text = this->editor->GetText();
+
+    size_t length = text.Length();
+
+    int lineCount = editor->GetLineCount();
+    size_t crlfCount = (lineCount > 1) ? (lineCount - 1) : 0;
+
+    size_t totalLength = length + crlfCount; 
+
+    SetStatusText(wxString::Format("Characters (with CRLF): %zu", totalLength));
+
+    evt.Skip();
+}
+
 
 bool IsPalindrome(const wxString &str)
 {

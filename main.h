@@ -83,6 +83,8 @@ private:
     void OnPaste(cmd &evt);
     void onCheckPalindrome(cmd &evt);
     void onReplaceFooOnBar(cmd &evt);
+    void OnTextChanged(wxStyledTextEvent& evt);
+
 };
 
 
