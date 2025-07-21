@@ -364,24 +364,22 @@ void MainFrame::OnReplaceFooOnBar(cmd &evt)
 
 void MainFrame::OnTextChanged(cmd &evt)
 {
-    wxString text = this->editor->GetText();
-
-    if (text.length() == 0)
-        return;
-
+    wxString text = editor->GetText();
     size_t length = text.Length();
 
-    size_t totalLength = length;
-
 #ifdef _WIN32
-    int lineCount = editor->GetLineCount();
-    size_t crlfCount = (lineCount > 1) ? (lineCount - 1) : 0;
-    totalLength += crlfCount; // добавляем символы CR для Windows
+    length += editor->GetLineCount() > 1 ? editor->GetLineCount() - 1 : 0; // учёт CR
 #endif
 
-    SetStatusText(wxString::Format("Characters (with CRLF): %zu", totalLength));
+    SetStatusText(wxString::Format("Characters%s: %zu",
+#ifdef _WIN32
+                                   " (with CRLF)"
+#else
+                                   ""
+#endif
+                                   ,
+                                   length));
 
-    evt.Skip();
 }
 
 void MainFrame ::OnReverseText(cmd &evt)
@@ -398,6 +396,10 @@ void MainFrame ::OnReverseText(cmd &evt)
 void MainFrame::OnSortLinesByLength(cmd &evt)
 {
     wxString text = this->editor->GetText();
+
+    if (text.length() == 0)
+        return;
+
     wxArrayString lines = wxSplit(text, '\n', '\0');
 #ifdef _WIN32
     for (wxString &line : lines)
@@ -421,15 +423,29 @@ void MainFrame::OnSortLinesByLength(cmd &evt)
 
 bool IsPalindrome(const wxString &str)
 {
-    wxString s = str;
-    s.MakeLower();
-    s.Replace(" ", "");
+    wxString filtered;
+    filtered.reserve(str.Length());
 
-    int len = s.Length();
+    for (wxChar ch : str)
+    {
+        if (wxIsalnum(ch))
+        {
+            filtered += wxString(ch).Lower();
+        }
+    }
+
+    int len = filtered.Length();
+
+    if (len == 0)
+    {
+        return false;
+    }
+
     for (int i = 0; i < len / 2; ++i)
     {
-        if (s[i] != s[len - 1 - i])
+        if (filtered[i] != filtered[len - 1 - i])
             return false;
     }
+
     return true;
 }
