@@ -18,10 +18,17 @@
 #include <wx/stc/stc.h>
 #include <wx/file.h>
 #include <wx/wfstream.h>
-#include <wx/filename.h> // Добавлено для wxFileName
-#include <wx/stdpaths.h> // Добавлено для wxStandardPaths
+#include <wx/filename.h>
+#include <wx/stdpaths.h>
 #include <wx/clipbrd.h>
-#include <wx/tokenzr.h> 
+#include <wx/tokenzr.h>
+#include <wx/cmdline.h>
+#include <wx/textfile.h> 
+#include <wx/arrstr.h>  
+#include <wx/msgdlg.h>
+#include <wx/filedlg.h>
+#include <wx/datetime.h> 
+#include <iostream>
 #include <algorithm>
 #include <vector>
 #include "about.h"
@@ -64,30 +71,38 @@ public:
     MainFrame(const wxString &title);
 
 private:
-    using cmd = wxCommandEvent;
-    wxPanel *panel = new wxPanel(this, wxID_ANY);                                        // The main panel
-    wxStyledTextCtrl *editor = new wxStyledTextCtrl(panel, wxID_ANY, wxDefaultPosition); // The text editor
+    // Объявляем члены класса, но НЕ инициализируем их здесь.
+    // Инициализация будет происходить в конструкторе MainFrame в main.cpp.
+    wxPanel *panel;
+    wxStyledTextCtrl *editor;
 
     // Event methods for menu items
-    void OnExit(cmd &evt);
-    void OnAbout(cmd &evt);
-    void OnSaveAs(cmd &WXUNUSED(evt));
-    void OnUndo(cmd &evt);
-    void OnRedo(cmd &evt);
-    void OnCopy(cmd &evt);
-    void OnCut(cmd &evt);
-    void OnPaste(cmd &evt);
-    void OnMyMessage(cmd &evt);
-    void OnSaveAsCustom(cmd &evt);
-    void OnOpenFile(cmd &evt);
-    void OnCopyToClipboard(cmd &evt);
-    void OnPasteFromClipboard(cmd &evt);
+    // Используем wxCommandEvent напрямую вместо 'cmd'
+    void OnExit(wxCommandEvent &evt);
+    void OnAbout(wxCommandEvent &evt);
+    void OnSaveAs(wxCommandEvent &WXUNUSED(evt));
+    void OnUndo(wxCommandEvent &evt);
+    void OnRedo(wxCommandEvent &evt);
+    void OnCopy(wxCommandEvent &evt);
+    void OnCut(wxCommandEvent &evt);
+    void OnPaste(wxCommandEvent &evt);
+    void OnMyMessage(wxCommandEvent &evt);
+    void OnSaveAsCustom(wxCommandEvent &evt);
+    void OnOpenFile(wxCommandEvent &evt);
+    void OnCopyToClipboard(wxCommandEvent &evt);
+    void OnPasteFromClipboard(wxCommandEvent &evt);
     void OnEditorChanged(const wxStyledTextEvent &evt);
-    void OnCheckPalindrome(cmd &evt);
-    void OnReplaceFooBar(cmd &evt);
-    void OnReverseText (cmd &evt);
-    void OnSortLines (cmd &evt);
+    void OnCheckPalindrome(wxCommandEvent &evt);
+    void OnReplaceFooBar(wxCommandEvent &evt);
+    void OnReverseText(wxCommandEvent &evt);
+    void OnSortLines(wxCommandEvent &evt);
 };
-    bool CompareLength (const wxString& a, const wxString& b);
+
+// Прототипы функций обработки текста (глобальные)
+bool CheckTextForPalindrome(const wxString &text);
+wxString ProcessReplaceFooBar(const wxString &text);
+wxString ProcessReverseText(const wxString &text);
+wxString ProcessSortLines(const wxString &text);
+bool CompareLength(const wxString &a, const wxString &b);
 
 #endif // MAIN_H
