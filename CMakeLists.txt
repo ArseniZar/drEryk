@@ -5,7 +5,13 @@ project(UNotePad VERSION 1.0.1)
 find_package(wxWidgets REQUIRED COMPONENTS core base stc)
 include(${wxWidgets_USE_FILE})
 
-set(SRC_FILES main.cpp main.h about.h about.cpp)
+file(GLOB_RECURSE SRC_FILES
+    "${PROJECT_SOURCE_DIR}/src/*.cpp"
+    "${PROJECT_SOURCE_DIR}/include/*.h"
+)
+
+include_directories(${PROJECT_SOURCE_DIR}/include)
+
 if(WIN32)
     set(SRC_FILES ${SRC_FILES} res.rc)
 endif()

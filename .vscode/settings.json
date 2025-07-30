@@ -1,5 +1,6 @@
 {
     "files.associations": {
+        "*.html": "jinja-html",
         "filesystem": "cpp",
         "atomic": "cpp",
         "hash_map": "cpp",
@@ -52,6 +53,8 @@
         "limits": "cpp",
         "numbers": "cpp",
         "typeinfo": "cpp",
-        "fstream": "cpp"
+        "fstream": "cpp",
+        "cstring": "cpp",
+        "set": "cpp"
     }
 }

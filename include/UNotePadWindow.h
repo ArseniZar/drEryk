@@ -1,15 +1,7 @@
-/**
- * @file main.h
- * @author Usitha Indeewara (https://github.com/usithadev)
- * @brief Declarations of main App class and main window.
- * @version 0.1
- * @date 2022-09-24
- *
- * @copyright Copyright (c) 2022 Usitha Indeewara. All Rights Reserved.
- */
 
-#ifndef MAIN_H
-#define MAIN_H
+
+#ifndef UNOTEPADWINDOW_H 
+#define UNOTEPADWINDOW_H
 
 #include <wx/wxprec.h>
 #ifndef WX_PRECOMP
@@ -28,8 +20,7 @@
 #include <cctype>
 
 #include "about.h"
-
-namespace fs = std::filesystem;
+#include "utils.h"
 
 enum MyCustomIDs
 {
@@ -44,9 +35,9 @@ enum MyCustomIDs
 constexpr char ICONS_PATH[] = "icons/";
 
 /**
- * @brief The main App class
+ * @brief The main UNotePadWindow class
  */
-class App : public wxApp
+class UNotePadWindow : public wxApp
 {
 public:
     /**
@@ -57,7 +48,7 @@ public:
     virtual bool OnInit();
 };
 
-wxDECLARE_APP(App);
+wxDECLARE_APP(UNotePadWindow);
 
 /**
  * @brief The main window object.
@@ -94,8 +85,7 @@ private:
 };
 
 void SaveStringToFile(const std::string &filepath, const std::string &content);
-std::string ReadFileToString(const fs::path &path);
-bool IsPalindrome(const wxString &str);
+std::string ReadFileToString(const std::filesystem::path &path);
 
 #endif // MAIN_H
 

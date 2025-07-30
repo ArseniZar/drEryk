@@ -1,7 +1,7 @@
 /**
- * @file main.cpp
+ * @file UNotePadWindow.cpp
  * @author Usitha Indeewara (https://github.com/usithadev)
- * @brief The forward declarations of classes and functions in main.h file.
+ * @brief The forward declarations of classes and functions in UNotePadWindow.h file.
  * @version 0.1
  * @date 2022-09-24
  *
@@ -11,11 +11,8 @@
  *
  */
 
-#include "main.h"
-
-wxIMPLEMENT_APP(App);
-
-bool App::OnInit()
+#include "UNotePadWindow.h"
+bool UNotePadWindow::OnInit()
 {
     MainFrame *frm = new MainFrame("UNotePad");
     frm->Show(true);
@@ -169,7 +166,7 @@ void MainFrame::OnSaveAs(cmd &WXUNUSED(evt))
     file->Close();
 }
 
-std::string ReadFileToString(const fs::path &path)
+std::string ReadFileToString(const std::filesystem::path &path)
 {
     std::ifstream file;
     file.exceptions(std::ifstream::failbit | std::ifstream::badbit);
@@ -190,17 +187,17 @@ void MainFrame::OnOpen(cmd &evt)
         return;
 
     wxString p = openFileDialog.GetPath();
-    fs::path path = fs::u8path(std::string(p.mb_str(wxConvUTF8)));
+    std::filesystem::path path = std::filesystem::u8path(std::string(p.mb_str(wxConvUTF8)));
 
     try
     {
-        if (!fs::exists(path))
+        if (!std::filesystem::exists(path))
         {
             wxMessageBox("Read error: File does not exist.", "Error", wxOK | wxICON_ERROR);
             return;
         }
 
-        if (fs::is_directory(path))
+        if (std::filesystem::is_directory(path))
         {
             wxMessageBox("Read error: The specified path is a directory, not a file.", "Error", wxOK | wxICON_ERROR);
             return;
@@ -214,7 +211,7 @@ void MainFrame::OnOpen(cmd &evt)
     {
         wxMessageBox("File read error: cannot open or read the file.", "Error", wxOK | wxICON_ERROR);
     }
-    catch (const fs::filesystem_error &e)
+    catch (const std::filesystem::filesystem_error &e)
     {
         wxMessageBox("Filesystem error: " + wxString(e.what()), "Error", wxOK | wxICON_ERROR);
     }
@@ -228,7 +225,7 @@ void MainFrame::OnOpen(cmd &evt)
     }
 }
 
-void SaveStringToFile(const fs::path &filepath, const std::string &content)
+void SaveStringToFile(const std::filesystem::path &filepath, const std::string &content)
 {
     std::ofstream file;
     file.exceptions(std::ofstream::failbit | std::ofstream::badbit);
@@ -250,13 +247,13 @@ void MainFrame::OnSaveAsCustom(cmd &evt)
     }
 
     wxString p = saveFileAs.GetPath();
-    fs::path path = fs::u8path(std::string(p.mb_str(wxConvUTF8)));
+    std::filesystem::path path = std::filesystem::u8path(std::string(p.mb_str(wxConvUTF8)));
 
     try
     {
-        if (fs::exists(path))
+        if (std::filesystem::exists(path))
         {
-            if (fs::is_directory(path))
+            if (std::filesystem::is_directory(path))
             {
                 wxMessageBox("Write error: the specified path is a directory.", "Error", wxOK | wxICON_ERROR);
                 return;
@@ -264,8 +261,8 @@ void MainFrame::OnSaveAsCustom(cmd &evt)
         }
         else
         {
-            fs::path parent = path.parent_path();
-            if (!fs::exists(parent) || !fs::is_directory(parent))
+            std::filesystem::path parent = path.parent_path();
+            if (!std::filesystem::exists(parent) || !std::filesystem::is_directory(parent))
             {
                 wxMessageBox("Write error: parent directory does not exist.", "Error", wxOK | wxICON_ERROR);
                 return;
@@ -279,7 +276,7 @@ void MainFrame::OnSaveAsCustom(cmd &evt)
     {
         wxMessageBox("Error writing file: cannot open or write to file. Check permissions and disk space.", "Error", wxOK | wxICON_ERROR);
     }
-    catch (const fs::filesystem_error &)
+    catch (const std::filesystem::filesystem_error &)
     {
         wxMessageBox("Filesystem error. Check the path and permissions.", "Error", wxOK | wxICON_ERROR);
     }
@@ -341,7 +338,9 @@ void MainFrame::OnInfo(cmd &evt)
 void MainFrame::OnCheckPalindrome(cmd &evt)
 {
     wxString str = this->editor->GetText();
-    if (IsPalindrome(str))
+    wxString wxText = this->editor->GetText();
+    std::string stdText = std::string(wxText.mb_str(wxConvUTF8));
+    if (util::isPalindrome(stdText))
     {
         wxMessageBox("Text is Palindrome",
                      "Info", wxOK | wxICON_INFORMATION);
@@ -354,98 +353,35 @@ void MainFrame::OnCheckPalindrome(cmd &evt)
 
 void MainFrame::OnReplaceFooOnBar(cmd &evt)
 {
-    wxString text = this->editor->GetText();
-    if (text.length() == 0)
-        return;
-
-    text.Replace("foo", "bar", true);
-    this->editor->SetText(text);
+    wxString wxText = this->editor->GetText();
+    std::string stdText = std::string(wxText.mb_str(wxConvUTF8));
+    std::string replaceText = util::replaceAll(stdText, "foo", "bars", true, false);
+    this->editor->SetText(replaceText);
 }
 
 void MainFrame::OnTextChanged(cmd &evt)
 {
-    wxString text = editor->GetText();
-    size_t length = text.Length();
-
-#ifdef _WIN32
-    length += editor->GetLineCount() > 1 ? editor->GetLineCount() - 1 : 0; // учёт CR
-#endif
-
-    SetStatusText(wxString::Format("Characters%s: %zu",
-#ifdef _WIN32
-                                   " (with CRLF)"
-#else
-                                   ""
-#endif
-                                   ,
-                                   length));
-
+    wxString wxText = this->editor->GetText();
+    std::string stdText = std::string(wxText.mb_str(wxConvUTF8));
+    size_t length = util::countVisibleChars(stdText);
+    wxString message = wxString::Format("Characters: %zu", length);
+    SetStatusText(message);
 }
 
 void MainFrame ::OnReverseText(cmd &evt)
 {
-    wxString text = this->editor->GetText();
-
-    if (text.length() == 0)
-        return;
-
-    std::reverse(text.begin(), text.end());
-    this->editor->SetText(text);
+    wxString wxText = this->editor->GetText();
+    std::string stdText = std::string(wxText.mb_str(wxConvUTF8));
+    std::string reverseText = util::reverse(stdText);
+    this->editor->SetText(reverseText);
 }
 
 void MainFrame::OnSortLinesByLength(cmd &evt)
 {
-    wxString text = this->editor->GetText();
+    wxString wxText = this->editor->GetText();
+    std::string stdText = std::string(wxText.mb_str(wxConvUTF8));
+    std::string sortedText = util::sortLines(stdText, true);
+    wxString wxSortedText(sortedText);
 
-    if (text.length() == 0)
-        return;
-
-    wxArrayString lines = wxSplit(text, '\n', '\0');
-#ifdef _WIN32
-    for (wxString &line : lines)
-    {
-        if (!line.empty() && line.Last() == '\r')
-            line.RemoveLast();
-    }
-#endif
-
-    std::sort(lines.begin(), lines.end(), [](const wxString &a, const wxString &b)
-              { return a.length() < b.length(); });
-
-#ifdef _WIN32
-    wxString sortedText = wxJoin(lines, "\r\n");
-#else
-    wxString sortedText = wxJoin(lines, '\n');
-#endif
-
-    this->editor->SetText(sortedText);
-}
-
-bool IsPalindrome(const wxString &str)
-{
-    wxString filtered;
-    filtered.reserve(str.Length());
-
-    for (wxChar ch : str)
-    {
-        if (wxIsalnum(ch))
-        {
-            filtered += wxString(ch).Lower();
-        }
-    }
-
-    int len = filtered.Length();
-
-    if (len == 0)
-    {
-        return false;
-    }
-
-    for (int i = 0; i < len / 2; ++i)
-    {
-        if (filtered[i] != filtered[len - 1 - i])
-            return false;
-    }
-
-    return true;
+    this->editor->SetText(wxSortedText);
 }
