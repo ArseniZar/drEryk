@@ -1,7 +1,7 @@
 #include "Command.h"
 
 
-const std::unordered_map<std::string, std::pair<Command, std::string>> commandMap = {
+inline  std::unordered_map<std::string, std::pair<Command, std::string>> commandMap = {
     {"--cli",  {Command::Cli, "Run the program in command-line interface (CLI) mode. Use with specific commands to process input."}},
     {"--pal",  {Command::Palindrome, "Check if the given input string is a palindrome (reads the same forwards and backwards). Input is read from standard input."}},
     {"--rep",  {Command::ReplaceAll, "Replace all occurrences of a substring within the input string. Requires additional arguments: <from> <to>. Optional flags: case sensitivity and whole word matching (T/F)."}},

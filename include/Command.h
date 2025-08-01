@@ -17,7 +17,6 @@ enum class Command
     Unknown
 };
 
-extern const std::unordered_map<std::string, std::pair<Command, std::string>> commandMap;
 
 Command parseCommand(const std::string& input);
 void printAllCommands();

@@ -355,7 +355,7 @@ void MainFrame::OnReplaceFooOnBar(cmd &evt)
 {
     wxString wxText = this->editor->GetText();
     std::string stdText = std::string(wxText.mb_str(wxConvUTF8));
-    std::string replaceText = util::replaceAll(stdText, "foo", "bars", true, false);
+    std::string replaceText = util::replaceAll(stdText, "foo", "bar", true, false);
     this->editor->SetText(replaceText);
 }
 
@@ -363,7 +363,7 @@ void MainFrame::OnTextChanged(cmd &evt)
 {
     wxString wxText = this->editor->GetText();
     std::string stdText = std::string(wxText.mb_str(wxConvUTF8));
-    size_t length = util::countVisibleChars(stdText);
+    size_t length = util::countChars(stdText);
     wxString message = wxString::Format("Characters: %zu", length);
     SetStatusText(message);
 }

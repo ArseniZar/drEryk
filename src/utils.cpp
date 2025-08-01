@@ -74,26 +74,21 @@ std::string util::reverse(const std::string &text)
     return result;
 }
 
-size_t util::countVisibleChars(const std::string &text)
+size_t util::countChars(const std::string &text)
 {
-    size_t count = 0;
-    for (char ch : text)
-    {
-        if (ch != '\r' && ch != '\n')
-        {
-            count++;
-        }
-    }
-    return count;
+    return text.size();
 }
 
-std::string util::sortLines(const std::string& input, bool ascending) {
+std::string util::sortLines(const std::string &input, bool ascending)
+{
     std::vector<std::string> lines;
     size_t start = 0;
 
-    while (true) {
+    while (true)
+    {
         size_t pos = input.find('\n', start);
-        if (pos == std::string::npos) {
+        if (pos == std::string::npos)
+        {
             lines.push_back(input.substr(start));
             break;
         }
@@ -102,26 +97,30 @@ std::string util::sortLines(const std::string& input, bool ascending) {
     }
 
     std::sort(lines.begin(), lines.end(),
-        [ascending](const std::string& a, const std::string& b) {
-            if (ascending) {
-                return a.length() < b.length();
-            } else {
-                return a.length() > b.length();
-            }
-        }
-    );
+              [ascending](const std::string &a, const std::string &b)
+              {
+                  if (ascending)
+                  {
+                      return a.length() < b.length();
+                  }
+                  else
+                  {
+                      return a.length() > b.length();
+                  }
+              });
 
     std::string result;
-    for (size_t i = 0; i < lines.size(); ++i) {
+    for (size_t i = 0; i < lines.size(); ++i)
+    {
         result += lines[i];
-        if (i + 1 < lines.size()) {
+        if (i + 1 < lines.size())
+        {
             result += '\n';
         }
     }
 
     return result;
 }
-
 
 std::string util::toLower(const std::string &str)
 {

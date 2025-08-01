@@ -76,7 +76,7 @@ int UNotePadCli::run(int &argc, char **argv)
 
     case Command::CountVisibleChars:
     {
-        size_t count = util::countVisibleChars(input);
+        size_t count = util::countChars(input);
         std::cout << "Visible characters: " << count << std::endl;
         break;
     }
