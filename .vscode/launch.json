@@ -1,0 +1,24 @@
+{
+    "configurations": [
+        {
+            "name": "C/C++: g++ build CMake file and debug main file",
+            "type": "cppdbg",
+            "request": "launch",
+            "program": "${workspaceFolder}/build/UNotePad.app/Contents/MacOS/UNotePad",
+            "args": [],
+            "stopAtEntry": false,
+            "cwd": "${workspaceFolder}",
+            "environment": [],
+            "externalConsole": false,
+            "MIMode": "",
+            "preLaunchTask": "CMake: build",
+            "miDebuggerPath": ""
+        },
+    ],
+    "version": "2.0.0",
+    "launch": {
+        "configurations": [
+            "C/C++: g++ build CMake file and debug main file"
+        ]
+    }
+}
