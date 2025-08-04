@@ -34,6 +34,24 @@ add_executable(UNotePad WIN32 MACOSX_BUNDLE ${SRC_FILES})
 # Link with wxWidgets libraries
 target_link_libraries(UNotePad PRIVATE ${wxWidgets_LIBRARIES})
 
+if(APPLE)
+
+    set(MACOSX_BUNDLE_RESOURCES_DIR "$<TARGET_FILE_DIR:UNotePad>/../Resources")
+    add_custom_command(TARGET UNotePad POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy_directory
+                "${CMAKE_SOURCE_DIR}/icon"
+                "${MACOSX_BUNDLE_RESOURCES_DIR}/icon"
+        COMMENT "Copying icons to macOS .app bundle resources"
+    )
+elseif(WIN32 OR UNIX) 
+    add_custom_command(TARGET UNotePad POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy_directory
+                "${CMAKE_SOURCE_DIR}/icon"
+                "$<TARGET_FILE_DIR:UNotePad>/icon"
+        COMMENT "Copying icons to build directory"
+    )
+endif()
+
 # --- Optional: Doxygen documentation generation ---
 find_package(Doxygen)
 if(DOXYGEN_FOUND)
@@ -49,4 +67,12 @@ if(DOXYGEN_FOUND)
     message(STATUS "Doxygen found. Added 'doxygen' target to generate documentation.")
 else()
     message(WARNING "Doxygen not found. Documentation will not be generated.")
+endif()
+
+
+if(APPLE)
+
+    install(DIRECTORY "${CMAKE_SOURCE_DIR}/icon" DESTINATION "${CMAKE_INSTALL_BUNDLE_RESOURCE_DIR}")
+else()
+
 endif()

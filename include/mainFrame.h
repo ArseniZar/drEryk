@@ -11,6 +11,8 @@
 #include <wx/textfile.h>
 #include <wx/clipbrd.h>
 #include <wx/filename.h>
+#include <wx/artprov.h>
+#include <wx/image.h> 
 
 enum
 {
@@ -20,7 +22,7 @@ enum
     ID_PasteFromClipboard,
     ID_CheckPalindrome,
     ID_ReplaceFooBar,
-    In_ReverseText,
+    ID_ReverseText,
     ID_SortLines
 };
 

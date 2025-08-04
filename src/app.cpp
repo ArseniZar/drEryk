@@ -1,7 +1,8 @@
 #include "app.h"
 #include "mainFrame.h"
+#include "textUtils.h"
 
-int OnCmdLine(wxCmdLineParser& parser, int argc, char **argv)
+int OnCmdLine(wxCmdLineParser &parser, int argc, char **argv)
 {
     // Add command line options
     parser.AddOption("palindrome", "p", "Check if text is a palindrome", wxCMD_LINE_VAL_STRING);
@@ -20,27 +21,35 @@ int OnCmdLine(wxCmdLineParser& parser, int argc, char **argv)
         wxString operationFound;
         bool operationRequested = false;
 
-        if (parser.Found("palindrome", &operationValue)) {
+        if (parser.Found("palindrome", &operationValue))
+        {
             operationFound = "palindrome";
             operationRequested = true;
-        } else if (parser.Found("replace", &operationValue)) {
+        }
+        else if (parser.Found("replace", &operationValue))
+        {
             operationFound = "replace";
             operationRequested = true;
-        } else if (parser.Found("reverse", &operationValue)) {
+        }
+        else if (parser.Found("reverse", &operationValue))
+        {
             operationFound = "reverse";
             operationRequested = true;
-        } else if (parser.Found("sortlines", &operationValue)) {
+        }
+        else if (parser.Found("sortlines", &operationValue))
+        {
             operationFound = "sortlines";
             operationRequested = true;
         }
-        
+
         wxString inputFilePath;
         bool inputFileMode = parser.Found("file", &inputFilePath);
 
         wxString outputFilePath;
         bool outputToFileMode = parser.Found("outputfile", &outputFilePath);
 
-        if (parser.Found("help")) {
+        if (parser.Found("help"))
+        {
             parser.Usage();
             return 0;
         }
@@ -48,25 +57,33 @@ int OnCmdLine(wxCmdLineParser& parser, int argc, char **argv)
         if (operationRequested)
         {
             wxString inputText;
-            if (inputFileMode) {
-                if (inputFilePath.IsEmpty()) {
+            if (inputFileMode)
+            {
+                if (inputFilePath.IsEmpty())
+                {
                     std::cerr << "Error: --file requires a file path." << std::endl;
                     return 1;
                 }
                 wxTextFile file;
-                if (!file.Open(inputFilePath)) {
+                if (!file.Open(inputFilePath))
+                {
                     std::cerr << "Error: Could not open input file for reading: " << std::string(inputFilePath.ToUTF8()) << std::endl;
                     return 1;
                 }
-                for (size_t i = 0; i < file.GetLineCount(); ++i) {
+                for (size_t i = 0; i < file.GetLineCount(); ++i)
+                {
                     inputText += file[i];
-                    if (i < file.GetLineCount() - 1) {
+                    if (i < file.GetLineCount() - 1)
+                    {
                         inputText += "\n";
                     }
                 }
                 file.Close();
-            } else {
-                if (operationValue.IsEmpty()) {
+            }
+            else
+            {
+                if (operationValue.IsEmpty())
+                {
                     std::cerr << "Error: No input text or file specified for operation." << std::endl;
                     return 1;
                 }
@@ -76,54 +93,72 @@ int OnCmdLine(wxCmdLineParser& parser, int argc, char **argv)
             std::string result;
             bool boolResult = false;
 
-            if (operationFound == "palindrome") {
+            if (operationFound == "palindrome")
+            {
                 boolResult = CheckTextForPalindrome(inputText);
                 result = boolResult ? "1" : "0";
-            } else if (operationFound == "replace") {
+            }
+            else if (operationFound == "replace")
+            {
                 result = std::string(ProcessReplaceFooBar(inputText).ToUTF8());
-            } else if (operationFound == "reverse") {
+            }
+            else if (operationFound == "reverse")
+            {
                 result = std::string(ProcessReverseText(inputText).ToUTF8());
-            } else if (operationFound == "sortlines") {
+            }
+            else if (operationFound == "sortlines")
+            {
                 result = std::string(ProcessSortLines(inputText).ToUTF8());
             }
 
-            if (outputToFileMode) {
-                if (outputFilePath.IsEmpty()) {
+            if (outputToFileMode)
+            {
+                if (outputFilePath.IsEmpty())
+                {
                     std::cerr << "Error: --outputfile requires a file path." << std::endl;
                     return 1;
                 }
                 wxFileOutputStream outputStream(outputFilePath);
-                if (!outputStream.IsOk()) {
+                if (!outputStream.IsOk())
+                {
                     std::cerr << "Error: Could not open output file: " << std::string(outputFilePath.ToUTF8()) << std::endl;
                     return 1;
                 }
                 outputStream.Write(result.c_str(), result.length());
-                 if (!outputStream.IsOk()) {
+                if (!outputStream.IsOk())
+                {
                     std::cerr << "Error: Could not write to output file: " << std::string(outputFilePath.ToUTF8()) << std::endl;
                     return 1;
                 }
                 std::cout << "Output written to file: " << std::string(outputFilePath.ToUTF8()) << std::endl;
-            } else {
+            }
+            else
+            {
                 std::cout << result << std::endl;
             }
-            return 0; 
-        } else {
+            return 0;
+        }
+        else
+        {
             parser.Usage();
-            return 1; 
+            return 1;
         }
     }
-    else if (parseResult == -1) 
+    else if (parseResult == -1)
     {
-        return 1; 
+        return 1;
     }
 
-    return -1; 
+    return -1;
 }
 
 bool App::OnInit()
 {
-    if (argc > 1) { // Check if there are any command-line arguments
+    wxImage::AddHandler(new wxPNGHandler());
+    if (argc > 1)
+    { // Check if there are any command-line arguments
         // Manual parsing logic
+
         wxString manualOperationType = wxEmptyString;
         wxString manualInputValue = wxEmptyString;
         bool manualInputIsFile = false;
@@ -131,79 +166,115 @@ bool App::OnInit()
         bool manualOutputToFile = false;
         bool helpRequested = false;
 
-        for (int i = 1; i < argc; ++i) {
+        if (!wxApp::OnInit())
+            return false;
+
+        for (int i = 1; i < argc; ++i)
+        {
             wxString arg = argv[i];
 
-            if (arg == "--palindrome" || arg == "-p") {
+            if (arg == "--palindrome" || arg == "-p")
+            {
                 manualOperationType = "palindrome";
-                if (i + 1 < argc && !(wxString(argv[i+1]) == "--file" || wxString(argv[i+1]) == "-f")) {
+                if (i + 1 < argc && !(wxString(argv[i + 1]) == "--file" || wxString(argv[i + 1]) == "-f"))
+                {
                     manualInputValue = argv[++i];
                 }
-            } else if (arg == "--replace" || arg == "-r") {
+            }
+            else if (arg == "--replace" || arg == "-r")
+            {
                 manualOperationType = "replace";
-                if (i + 1 < argc && !(wxString(argv[i+1]) == "--file" || wxString(argv[i+1]) == "-f")) {
+                if (i + 1 < argc && !(wxString(argv[i + 1]) == "--file" || wxString(argv[i + 1]) == "-f"))
+                {
                     manualInputValue = argv[++i];
                 }
-            } else if (arg == "--reverse" || arg == "-v") {
+            }
+            else if (arg == "--reverse" || arg == "-v")
+            {
                 manualOperationType = "reverse";
-                if (i + 1 < argc && !(wxString(argv[i+1]) == "--file" || wxString(argv[i+1]) == "-f")) {
+                if (i + 1 < argc && !(wxString(argv[i + 1]) == "--file" || wxString(argv[i + 1]) == "-f"))
+                {
                     manualInputValue = argv[++i];
                 }
-            } else if (arg == "--sortlines" || arg == "-s") {
+            }
+            else if (arg == "--sortlines" || arg == "-s")
+            {
                 manualOperationType = "sortlines";
-                if (i + 1 < argc && !(wxString(argv[i+1]) == "--file" || wxString(argv[i+1]) == "-f")) {
+                if (i + 1 < argc && !(wxString(argv[i + 1]) == "--file" || wxString(argv[i + 1]) == "-f"))
+                {
                     manualInputValue = argv[++i];
                 }
-            } else if (arg == "--file" || arg == "-f") {
+            }
+            else if (arg == "--file" || arg == "-f")
+            {
                 manualInputIsFile = true;
-                if (i + 1 < argc) {
+                if (i + 1 < argc)
+                {
                     manualInputValue = argv[++i];
-                } else {
+                }
+                else
+                {
                     std::cerr << "Error: --file requires a file path." << std::endl;
-                    return false; 
+                    return false;
                 }
-            } else if (arg == "--outputfile" || arg == "-o") {
+            }
+            else if (arg == "--outputfile" || arg == "-o")
+            {
                 manualOutputToFile = true;
-                if (i + 1 < argc) {
+                if (i + 1 < argc)
+                {
                     manualOutputFilePath = argv[++i];
-                } else {
-                    std::cerr << "Error: --outputfile requires a file path." << std::endl;
-                    return false; 
                 }
-            } else if (arg == "--help" || arg == "-h") {
+                else
+                {
+                    std::cerr << "Error: --outputfile requires a file path." << std::endl;
+                    return false;
+                }
+            }
+            else if (arg == "--help" || arg == "-h")
+            {
                 helpRequested = true;
             }
         }
 
-        if (!manualOperationType.IsEmpty() || helpRequested) {
-            if (helpRequested) {
+        if (!manualOperationType.IsEmpty() || helpRequested)
+        {
+            if (helpRequested)
+            {
                 std::cout << "Usage: UNotePad <operation> [input_value] [--file <path>] [--outputfile <path>]" << std::endl;
                 // ... (rest of help message)
-                return false; 
+                return false;
             }
-            
+
             wxString processedInputText;
-            if (manualInputIsFile) {
-                
-                 if (manualInputValue.IsEmpty()) {
+            if (manualInputIsFile)
+            {
+
+                if (manualInputValue.IsEmpty())
+                {
                     std::cerr << "Error: --file flag requires a file path." << std::endl;
                     return false;
                 }
                 wxTextFile file;
-                if (!file.Open(manualInputValue)) { 
+                if (!file.Open(manualInputValue))
+                {
                     std::cerr << "Error: Could not open input file for reading: " << std::string(manualInputValue.ToUTF8()) << std::endl;
                     return false;
                 }
-                for (size_t i = 0; i < file.GetLineCount(); ++i) {
+                for (size_t i = 0; i < file.GetLineCount(); ++i)
+                {
                     processedInputText += file[i];
-                    if (i < file.GetLineCount() - 1) {
+                    if (i < file.GetLineCount() - 1)
+                    {
                         processedInputText += "\n";
                     }
                 }
                 file.Close();
-
-            } else {
-                 if (manualInputValue.IsEmpty()) {
+            }
+            else
+            {
+                if (manualInputValue.IsEmpty())
+                {
                     std::cerr << "Error: No input text provided for the operation." << std::endl;
                     return false;
                 }
@@ -211,36 +282,49 @@ bool App::OnInit()
             }
 
             std::string result;
-            if (manualOperationType == "palindrome") {
+            if (manualOperationType == "palindrome")
+            {
                 result = CheckTextForPalindrome(processedInputText) ? "1" : "0";
-            } else if (manualOperationType == "replace") {
+            }
+            else if (manualOperationType == "replace")
+            {
                 result = std::string(ProcessReplaceFooBar(processedInputText).ToUTF8());
-            } else if (manualOperationType == "reverse") {
+            }
+            else if (manualOperationType == "reverse")
+            {
                 result = std::string(ProcessReverseText(processedInputText).ToUTF8());
-            } else if (manualOperationType == "sortlines") {
+            }
+            else if (manualOperationType == "sortlines")
+            {
                 result = std::string(ProcessSortLines(processedInputText).ToUTF8());
             }
 
-            if (manualOutputToFile) {
-                 if (manualOutputFilePath.IsEmpty()) {
+            if (manualOutputToFile)
+            {
+                if (manualOutputFilePath.IsEmpty())
+                {
                     std::cerr << "Error: --outputfile requires a file path." << std::endl;
                     return false;
                 }
                 wxFileOutputStream outputStream(manualOutputFilePath);
-                if (!outputStream.IsOk()) {
+                if (!outputStream.IsOk())
+                {
                     std::cerr << "Error: Could not open output file for writing: " << std::string(manualOutputFilePath.ToUTF8()) << std::endl;
                     return false;
                 }
                 outputStream.Write(result.c_str(), result.length());
-                if (!outputStream.IsOk()) {
+                if (!outputStream.IsOk())
+                {
                     std::cerr << "Error: Could not write to output file: " << std::string(manualOutputFilePath.ToUTF8()) << std::endl;
                     return false;
                 }
                 std::cout << "Output written to file: " << std::string(manualOutputFilePath.ToUTF8()) << std::endl;
-            } else {
+            }
+            else
+            {
                 std::cout << result << std::endl;
             }
-            return false; 
+            return false;
         }
     }
 

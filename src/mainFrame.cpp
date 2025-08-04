@@ -1,28 +1,42 @@
 #include "mainFrame.h"
 
-
-MainFrame::MainFrame(const wxString& title)
+MainFrame::MainFrame(const wxString &title)
     : wxFrame(nullptr, wxID_ANY, title, wxPoint(50, 50), wxSize(800, 600))
 {
     panel = new wxPanel(this, wxID_ANY);
     editor = new wxStyledTextCtrl(panel, wxID_ANY, wxDefaultPosition, wxSize(-1, -1), wxHSCROLL | wxVSCROLL);
 
 #if WIN32
-     this->SetIcon(wxICON(appicon));
+    this->SetIcon(wxICON(appicon));
 #endif
 
     // Widgets
     wxBoxSizer *mainSizer = new wxBoxSizer(wxVERTICAL);
-    wxBoxSizer *panelsizer = new wxBoxSizer(wxVERTICAL);
+    wxBoxSizer *panelsizer = new wxBoxSizer(wxHORIZONTAL);
 
-    panelsizer->Add(editor, 1, wxALL | wxEXPAND, 0);
+    wxBoxSizer *verticalButtonSizer = new wxBoxSizer(wxVERTICAL);
+
+wxBitmap replaceBmp(wxImage("UNotePad.app/Contents/Resources/icon/icons8-move-up-row-50.png").Rescale(32, 32));
+wxBitmap reverseBmp(wxImage("UNotePad.app/Contents/Resources/icon/icons8-reverse-50.png").Rescale(32, 32));
+wxBitmap sortLinesBmp(wxImage("UNotePad.app/Contents/Resources/icon/icons8-sort-50.png").Rescale(32, 32));
+    wxButton *palindromeButton = new wxButton(panel, ID_CheckPalindrome, "IsPal");
+    wxBitmapButton *replaceButton = new wxBitmapButton(panel, ID_ReplaceFooBar, replaceBmp, wxDefaultPosition, wxDefaultSize, wxBU_AUTODRAW);
+    wxBitmapButton *reverseButton = new wxBitmapButton(panel, ID_ReverseText, reverseBmp, wxDefaultPosition, wxDefaultSize, wxBU_AUTODRAW);
+    wxBitmapButton *sortLinesButton = new wxBitmapButton(panel, ID_SortLines, sortLinesBmp, wxDefaultPosition, wxDefaultSize, wxBU_AUTODRAW);
+
+    verticalButtonSizer->Add(palindromeButton, 0, wxALL | wxALIGN_RIGHT, 5);
+    verticalButtonSizer->Add(replaceButton, 0, wxALL | wxALIGN_RIGHT, 5);
+    verticalButtonSizer->Add(reverseButton, 0, wxALL | wxALIGN_RIGHT, 5);
+    verticalButtonSizer->Add(sortLinesButton, 0, wxALL | wxALIGN_RIGHT, 5);
+   
+    panelsizer->Add(editor, 1, wxEXPAND | wxALL, 0);
+    panelsizer->Add(verticalButtonSizer, 0, wxALL | wxALIGN_RIGHT, 5);  
     editor->SetMinSize(wxSize(300, 300));
 
     panel->SetSizerAndFit(panelsizer);
 
     mainSizer->Add(panel, 1, wxALL | wxEXPAND, 0);
     SetSizerAndFit(mainSizer);
-
 
     // Create menu
     wxMenu *fileMenu = new wxMenu;
@@ -53,7 +67,7 @@ MainFrame::MainFrame(const wxString& title)
     editMenu->Append(ID_CheckPalindrome, "Check &Palindrome\tCtrl+P", "Check if the current text is a palindrome.");
     editMenu->AppendSeparator();
     editMenu->Append(ID_ReplaceFooBar, "Replace F&oo with Bar", "Replace all occurrences of 'foo' with 'bar'.");
-    editMenu->Append(In_ReverseText, "&Reverse Text", "Reverse the entire text in the editor.");
+    editMenu->Append(ID_ReverseText, "&Reverse Text", "Reverse the entire text in the editor.");
     editMenu->AppendSeparator();
     editMenu->Append(ID_SortLines, "Sort L&ines by Length", "Sort all lines in the editor by their length.");
 
@@ -84,10 +98,22 @@ MainFrame::MainFrame(const wxString& title)
     Bind(wxEVT_STC_CHANGE, &MainFrame::OnEditorChanged, this, editor->GetId());
     Bind(wxEVT_MENU, &MainFrame::OnCheckPalindrome, this, ID_CheckPalindrome);
     Bind(wxEVT_MENU, &MainFrame::OnReplaceFooBar, this, ID_ReplaceFooBar);
-    Bind(wxEVT_MENU, &MainFrame::OnReverseText, this, In_ReverseText);
+    Bind(wxEVT_MENU, &MainFrame::OnReverseText, this, ID_ReverseText);
     Bind(wxEVT_MENU, &MainFrame::OnSortLines, this, ID_SortLines);
 
-    OnEditorChanged(wxStyledTextEvent()); 
+    Bind(wxEVT_MENU, &MainFrame::OnCheckPalindrome, this, ID_CheckPalindrome);
+    Bind(wxEVT_BUTTON, &MainFrame::OnCheckPalindrome, this, ID_CheckPalindrome);
+
+    Bind(wxEVT_MENU, &MainFrame::OnReplaceFooBar, this, ID_ReplaceFooBar);
+    Bind(wxEVT_BUTTON, &MainFrame::OnReplaceFooBar, this, ID_ReplaceFooBar);
+
+    Bind(wxEVT_MENU, &MainFrame::OnReverseText, this, ID_ReverseText);
+    Bind(wxEVT_BUTTON, &MainFrame::OnReverseText, this, ID_ReverseText);
+
+    Bind(wxEVT_MENU, &MainFrame::OnSortLines, this, ID_SortLines);
+    Bind(wxEVT_BUTTON, &MainFrame::OnSortLines, this, ID_SortLines);
+
+    OnEditorChanged(wxStyledTextEvent());
 }
 
 // GUI Event methods
@@ -118,7 +144,8 @@ void MainFrame::OnSaveAs(wxCommandEvent &WXUNUSED(evt))
     {
         file.Clear();
         wxArrayString lines = wxStringTokenize(str, "\n", wxTOKEN_RET_EMPTY_ALL);
-        for (const wxString& line : lines) {
+        for (const wxString &line : lines)
+        {
             file.AddLine(line);
         }
         if (!file.Write())
@@ -192,17 +219,22 @@ void MainFrame::OnSaveAsCustom(wxCommandEvent &WXUNUSED(evt))
     }
 
     wxTextFile file;
-    if (file.Create(filePath)) {
+    if (file.Create(filePath))
+    {
         file.Clear();
         wxArrayString lines = wxStringTokenize(contentToSave, "\n", wxTOKEN_RET_EMPTY_ALL);
-        for (const wxString& line : lines) {
+        for (const wxString &line : lines)
+        {
             file.AddLine(line);
         }
-        if (!file.Write()) {
+        if (!file.Write())
+        {
             wxMessageBox("An error occurred during writing data to the file.", "Write Error", wxOK | wxICON_ERROR);
         }
         file.Close();
-    } else {
+    }
+    else
+    {
         wxString errorMessage;
         errorMessage.Printf("Failed to open file for writing: \"%s\".\nPossible reasons: no write permissions, invalid file name, or file is in use by another application.", filePath);
         wxMessageBox(errorMessage, "File Write Error", wxOK | wxICON_ERROR);
@@ -239,7 +271,8 @@ void MainFrame::OnOpenFile(wxCommandEvent &WXUNUSED(evt))
     }
 
     wxTextFile file;
-    if (!file.Open(filePath)) {
+    if (!file.Open(filePath))
+    {
         wxString errorMessage;
         errorMessage.Printf("Failed to open file: \"%s\".\nPossible reasons: file does not exist, no read permissions, or file is in use.", filePath);
         wxMessageBox(errorMessage, "File Open Error", wxOK | wxICON_ERROR);
@@ -247,9 +280,11 @@ void MainFrame::OnOpenFile(wxCommandEvent &WXUNUSED(evt))
     }
 
     wxString fileContent;
-    for (size_t i = 0; i < file.GetLineCount(); ++i) {
+    for (size_t i = 0; i < file.GetLineCount(); ++i)
+    {
         fileContent += file[i];
-        if (i < file.GetLineCount() - 1) {
+        if (i < file.GetLineCount() - 1)
+        {
             fileContent += "\n";
         }
     }
