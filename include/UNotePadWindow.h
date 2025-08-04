@@ -1,6 +1,6 @@
 
 
-#ifndef UNOTEPADWINDOW_H 
+#ifndef UNOTEPADWINDOW_H
 #define UNOTEPADWINDOW_H
 
 #include <wx/wxprec.h>
@@ -28,7 +28,7 @@ enum MyCustomIDs
     ID_PASTE_ALL_FIELDS = wxID_HIGHEST + 2,
     ID_TOOLS_CHECK_PALINDROME = wxID_HIGHEST + 3,
     ID_TOOLS_REPLACE_FOO_BAR = wxID_HIGHEST + 4,
-    ID_TOOLS_REVERS_TEXT =  wxID_HIGHEST + 5,
+    ID_TOOLS_REVERS_TEXT = wxID_HIGHEST + 5,
     ID_TOOLS_SORT_LINES_BY_TEXT = wxID_HIGHEST + 6,
 };
 
@@ -65,6 +65,14 @@ private:
     wxStyledTextCtrl *editor;
 
     // Event methods for menu items
+    wxPanel *CreateEditorPanel();
+    wxPanel *CreateButtonsPanel();
+    wxButton *CreateTextButton(wxWindow* parent, int id, const wxString& label);
+    wxBitmapButton *CreateBitmapButton(wxWindow *parent, int id, const std::string &filename);
+
+    void CreateMenuBar();
+    void BindEvents();
+
     void OnInfo(cmd &evt);
     void OnExit(cmd &evt);
     void OnAbout(cmd &evt);

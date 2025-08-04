@@ -25,40 +25,70 @@ MainFrame::MainFrame(const wxString &title) : wxFrame(nullptr, wxID_ANY, title)
 #if WIN32
     this->SetIcon(wxICON(appicon)); // Set the application icon
 #endif                              // WIN32
-    wxBoxSizer *main = new wxBoxSizer(wxHORIZONTAL);
+    wxBoxSizer *mainSizer = new wxBoxSizer(wxHORIZONTAL);
 
+    wxPanel *editorPanel = CreateEditorPanel();
+    wxPanel *buttonsPanel = CreateButtonsPanel();
+
+    mainSizer->Add(editorPanel, 1, wxALL | wxEXPAND, 0);
+    mainSizer->Add(buttonsPanel, 0, wxALL | wxEXPAND, 0);
+
+    SetSizerAndFit(mainSizer);
+
+    CreateMenuBar();
+    CreateStatusBar();
+    BindEvents();
+}
+
+wxPanel* MainFrame::CreateEditorPanel()
+{
     wxPanel *editorPanel = new wxPanel(this, wxID_ANY);
-    wxPanel *buttonsPanel = new wxPanel(this, wxID_ANY);
+    wxBoxSizer *editorSizer = new wxBoxSizer(wxVERTICAL);
 
     editor = new wxStyledTextCtrl(editorPanel, wxID_ANY, wxDefaultPosition);
-    wxBoxSizer *panelsizer = new wxBoxSizer(wxVERTICAL);
-    panelsizer->Add(editor, 1, wxALL | wxEXPAND, 0);
     editor->SetMinSize(wxSize(600, 600));
-    editorPanel->SetSizerAndFit(panelsizer);
 
-    wxBitmap bmpCopy(std::string(ICONS_PATH) + "icons8-copy-48.png", wxBITMAP_TYPE_PNG);
-    wxImage imgCopy = bmpCopy.ConvertToImage().Scale(20, 20, wxIMAGE_QUALITY_HIGH);
-    wxBitmap bmpScalerCopy(imgCopy);
-    wxBitmapButton *bmpBtn1 = new wxBitmapButton(buttonsPanel, ID_COPY_ALL_FIELDS, bmpScalerCopy, wxDefaultPosition, wxSize(40, 40));
+    editorSizer->Add(editor, 1, wxALL | wxEXPAND, 0);
+    editorPanel->SetSizerAndFit(editorSizer);
 
-    wxBitmap bmpPaste(std::string(ICONS_PATH) + "icons8-paste-48.png", wxBITMAP_TYPE_PNG);
-    wxImage imgPaste = bmpPaste.ConvertToImage().Scale(20, 20, wxIMAGE_QUALITY_HIGH);
-    wxBitmap imgScalerPaste(imgPaste);
-    wxBitmapButton *bmpBtn2 = new wxBitmapButton(buttonsPanel, ID_PASTE_ALL_FIELDS, imgScalerPaste, wxDefaultPosition, wxSize(40, 40));
+    return editorPanel;
+}
 
-    wxBoxSizer *panelButtonSizer = new wxBoxSizer(wxVERTICAL);
-    panelButtonSizer->Add(bmpBtn1, 0, wxALL, 5);
-    panelButtonSizer->Add(bmpBtn2, 0, wxALL, 5);
-    buttonsPanel->SetSizerAndFit(panelButtonSizer);
+wxPanel* MainFrame::CreateButtonsPanel()
+{
+    wxPanel *buttonsPanel = new wxPanel(this, wxID_ANY);
+    wxBoxSizer *buttonSizer = new wxBoxSizer(wxVERTICAL);
 
-    main->Add(editorPanel, 1, wxALL | wxEXPAND, 0);
-    main->Add(buttonsPanel, 0, wxALL | wxEXPAND, 0);
+    buttonSizer->Add(CreateBitmapButton(buttonsPanel, ID_COPY_ALL_FIELDS, "icons8-copy-48.png"), 0, wxALL, 5);
+    buttonSizer->Add(CreateBitmapButton(buttonsPanel, ID_PASTE_ALL_FIELDS, "icons8-paste-48.png"), 0, wxALL, 5);
 
-    SetSizerAndFit(main);
+    buttonSizer->Add(CreateBitmapButton(buttonsPanel, ID_TOOLS_REPLACE_FOO_BAR, "icons8-move-up-row-50.png"), 0, wxALL, 5);
+    buttonSizer->Add(CreateBitmapButton(buttonsPanel, ID_TOOLS_REVERS_TEXT, "icons8-reverse-50.png"), 0, wxALL, 5);
+    buttonSizer->Add(CreateBitmapButton(buttonsPanel, ID_TOOLS_SORT_LINES_BY_TEXT, "icons8-sort-50.png"), 0, wxALL, 5);
+    buttonSizer->Add(CreateTextButton(buttonsPanel, ID_TOOLS_CHECK_PALINDROME, "isPal"), 0, wxALL, 5);
 
-    //
-    // Menu bar and status bar
-    //
+    buttonsPanel->SetSizerAndFit(buttonSizer);
+
+    return buttonsPanel;
+}
+
+wxBitmapButton* MainFrame::CreateBitmapButton(wxWindow *parent, int id, const std::string &filename)
+{
+    wxBitmap bmp(std::string(ICONS_PATH) + filename, wxBITMAP_TYPE_PNG);
+    wxImage img = bmp.ConvertToImage().Scale(20, 20, wxIMAGE_QUALITY_HIGH);
+    wxBitmap scaledBmp(img);
+
+    return new wxBitmapButton(parent, id, scaledBmp, wxDefaultPosition, wxSize(40, 40));
+}
+
+wxButton* MainFrame::CreateTextButton(wxWindow* parent, int id, const wxString& label)
+{
+    return new wxButton(parent, id, label, wxDefaultPosition, wxSize(40, 40));
+}
+
+
+void MainFrame::CreateMenuBar()
+{
     wxMenu *file = new wxMenu;
     file->Append(wxID_NEW);
     file->Append(wxID_OPEN);
@@ -68,9 +98,6 @@ MainFrame::MainFrame(const wxString &title) : wxFrame(nullptr, wxID_ANY, title)
     file->AppendSeparator();
     file->Append(wxID_EXIT);
 
-    wxMenu *help = new wxMenu;
-    help->Append(wxID_ABOUT);
-
     wxMenu *edit = new wxMenu;
     edit->Append(wxID_UNDO);
     edit->Append(wxID_REDO);
@@ -78,6 +105,9 @@ MainFrame::MainFrame(const wxString &title) : wxFrame(nullptr, wxID_ANY, title)
     edit->Append(wxID_COPY);
     edit->Append(wxID_CUT);
     edit->Append(wxID_PASTE);
+
+    wxMenu *help = new wxMenu;
+    help->Append(wxID_ABOUT);
 
     wxMenu *info = new wxMenu;
     info->Append(wxID_INFO);
@@ -96,29 +126,37 @@ MainFrame::MainFrame(const wxString &title) : wxFrame(nullptr, wxID_ANY, title)
     menubar->Append(tools, "&Tools");
 
     SetMenuBar(menubar);
+}
 
-    CreateStatusBar();
-
-    //
-    // Event bindings
-    //
+void MainFrame::BindEvents()
+{
+    // File/Menu events
     Bind(wxEVT_MENU, &MainFrame::OnExit, this, wxID_EXIT);
-    Bind(wxEVT_MENU, &MainFrame::OnAbout, this, wxID_ABOUT);
+    Bind(wxEVT_MENU, &MainFrame::OnOpen, this, wxID_OPEN);
     Bind(wxEVT_MENU, &MainFrame::OnSaveAs, this, wxID_SAVEAS);
     Bind(wxEVT_MENU, &MainFrame::OnSaveAsCustom, this, wxID_SAVE);
-    Bind(wxEVT_MENU, &MainFrame::OnOpen, this, wxID_OPEN);
+
+    // Edit/Menu events
     Bind(wxEVT_MENU, &MainFrame::OnUndo, this, wxID_UNDO);
     Bind(wxEVT_MENU, &MainFrame::OnRedo, this, wxID_REDO);
     Bind(wxEVT_MENU, &MainFrame::OnCut, this, wxID_CUT);
     Bind(wxEVT_MENU, &MainFrame::OnCopy, this, wxID_COPY);
     Bind(wxEVT_MENU, &MainFrame::OnPaste, this, wxID_PASTE);
+
+    // Help/Info
+    Bind(wxEVT_MENU, &MainFrame::OnAbout, this, wxID_ABOUT);
     Bind(wxEVT_MENU, &MainFrame::OnInfo, this, wxID_INFO);
 
+    // Tools
     Bind(wxEVT_MENU, &MainFrame::OnCheckPalindrome, this, ID_TOOLS_CHECK_PALINDROME);
     Bind(wxEVT_MENU, &MainFrame::OnReplaceFooOnBar, this, ID_TOOLS_REPLACE_FOO_BAR);
     Bind(wxEVT_MENU, &MainFrame::OnReverseText, this, ID_TOOLS_REVERS_TEXT);
     Bind(wxEVT_MENU, &MainFrame::OnSortLinesByLength, this, ID_TOOLS_SORT_LINES_BY_TEXT);
-
+    Bind(wxEVT_BUTTON, &MainFrame::OnCheckPalindrome, this, ID_TOOLS_CHECK_PALINDROME);
+    Bind(wxEVT_BUTTON, &MainFrame::OnReplaceFooOnBar, this, ID_TOOLS_REPLACE_FOO_BAR);
+    Bind(wxEVT_BUTTON, &MainFrame::OnReverseText, this, ID_TOOLS_REVERS_TEXT);
+    Bind(wxEVT_BUTTON, &MainFrame::OnSortLinesByLength, this, ID_TOOLS_SORT_LINES_BY_TEXT);
+    
     Bind(wxEVT_BUTTON, &MainFrame::OnCopyCustom, this, ID_COPY_ALL_FIELDS);
     Bind(wxEVT_BUTTON, &MainFrame::OnPaste, this, ID_PASTE_ALL_FIELDS);
 
