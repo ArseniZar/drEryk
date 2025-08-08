@@ -23,15 +23,23 @@ bool UNotePadWindow::OnInit()
 MainFrame::MainFrame(const wxString &title) : wxFrame(nullptr, wxID_ANY, title)
 {
 #if WIN32
-    this->SetIcon(wxICON(appicon)); // Set the application icon
-#endif                              // WIN32
-    wxBoxSizer *mainSizer = new wxBoxSizer(wxHORIZONTAL);
+    this->SetIcon(wxICON(appicon));                           // Set the application icon
+#endif                                                        // WIN32
+    wxBoxSizer *mainSizer = new wxBoxSizer(wxHORIZONTAL);     
+    wxBoxSizer *leftPanelSizer = new wxBoxSizer(wxVERTICAL); 
+    wxBoxSizer *rightPanelSizer = new wxBoxSizer(wxVERTICAL); 
 
+    wxPanel *replacePanel = CreateReplacePanel();
     wxPanel *editorPanel = CreateEditorPanel();
     wxPanel *buttonsPanel = CreateButtonsPanel();
 
-    mainSizer->Add(editorPanel, 1, wxALL | wxEXPAND, 0);
-    mainSizer->Add(buttonsPanel, 0, wxALL | wxEXPAND, 0);
+    leftPanelSizer->Add(replacePanel, 0, wxALL | wxEXPAND, 5);
+    leftPanelSizer->Add(editorPanel, 1, wxALL | wxEXPAND, 5);
+
+    rightPanelSizer->Add(buttonsPanel, 0, wxALL | wxEXPAND, 5);
+
+    mainSizer->Add(leftPanelSizer, 1, wxEXPAND);
+    mainSizer->Add(rightPanelSizer, 0, wxEXPAND);
 
     SetSizerAndFit(mainSizer);
 
@@ -40,7 +48,7 @@ MainFrame::MainFrame(const wxString &title) : wxFrame(nullptr, wxID_ANY, title)
     BindEvents();
 }
 
-wxPanel* MainFrame::CreateEditorPanel()
+wxPanel *MainFrame::CreateEditorPanel()
 {
     wxPanel *editorPanel = new wxPanel(this, wxID_ANY);
     wxBoxSizer *editorSizer = new wxBoxSizer(wxVERTICAL);
@@ -54,7 +62,7 @@ wxPanel* MainFrame::CreateEditorPanel()
     return editorPanel;
 }
 
-wxPanel* MainFrame::CreateButtonsPanel()
+wxPanel *MainFrame::CreateButtonsPanel()
 {
     wxPanel *buttonsPanel = new wxPanel(this, wxID_ANY);
     wxBoxSizer *buttonSizer = new wxBoxSizer(wxVERTICAL);
@@ -72,7 +80,27 @@ wxPanel* MainFrame::CreateButtonsPanel()
     return buttonsPanel;
 }
 
-wxBitmapButton* MainFrame::CreateBitmapButton(wxWindow *parent, int id, const std::string &filename)
+wxPanel *MainFrame::CreateReplacePanel()
+{
+    wxPanel *panel = new wxPanel(this, wxID_ANY);
+    wxBoxSizer *hbox = new wxBoxSizer(wxHORIZONTAL);
+
+    hbox->Add(new wxStaticText(panel, wxID_ANY, "Search:"), 0, wxALIGN_CENTER_VERTICAL | wxRIGHT, 5);
+    searchCtrl = new wxTextCtrl(panel, wxID_ANY);
+    hbox->Add(searchCtrl, 1, wxRIGHT, 10);
+
+    hbox->Add(new wxStaticText(panel, wxID_ANY, "Replace:"), 0, wxALIGN_CENTER_VERTICAL | wxRIGHT, 5);
+    replaceCtrl = new wxTextCtrl(panel, wxID_ANY);
+    hbox->Add(replaceCtrl, 1, wxRIGHT, 10);
+
+    wxButton *goButton = new wxButton(panel, ID_REPLACE_GO_BUTTON, "Go");
+    hbox->Add(goButton, 0);
+
+    panel->SetSizerAndFit(hbox);
+    return panel;
+}
+
+wxBitmapButton *MainFrame::CreateBitmapButton(wxWindow *parent, int id, const std::string &filename)
 {
     wxBitmap bmp(std::string(ICONS_PATH) + filename, wxBITMAP_TYPE_PNG);
     wxImage img = bmp.ConvertToImage().Scale(20, 20, wxIMAGE_QUALITY_HIGH);
@@ -81,11 +109,10 @@ wxBitmapButton* MainFrame::CreateBitmapButton(wxWindow *parent, int id, const st
     return new wxBitmapButton(parent, id, scaledBmp, wxDefaultPosition, wxSize(40, 40));
 }
 
-wxButton* MainFrame::CreateTextButton(wxWindow* parent, int id, const wxString& label)
+wxButton *MainFrame::CreateTextButton(wxWindow *parent, int id, const wxString &label)
 {
     return new wxButton(parent, id, label, wxDefaultPosition, wxSize(40, 40));
 }
-
 
 void MainFrame::CreateMenuBar()
 {
@@ -147,6 +174,10 @@ void MainFrame::BindEvents()
     Bind(wxEVT_MENU, &MainFrame::OnAbout, this, wxID_ABOUT);
     Bind(wxEVT_MENU, &MainFrame::OnInfo, this, wxID_INFO);
 
+    // Copy/Pass
+    Bind(wxEVT_BUTTON, &MainFrame::OnCopyCustom, this, ID_COPY_ALL_FIELDS);
+    Bind(wxEVT_BUTTON, &MainFrame::OnPaste, this, ID_PASTE_ALL_FIELDS);
+
     // Tools
     Bind(wxEVT_MENU, &MainFrame::OnCheckPalindrome, this, ID_TOOLS_CHECK_PALINDROME);
     Bind(wxEVT_MENU, &MainFrame::OnReplaceFooOnBar, this, ID_TOOLS_REPLACE_FOO_BAR);
@@ -156,10 +187,11 @@ void MainFrame::BindEvents()
     Bind(wxEVT_BUTTON, &MainFrame::OnReplaceFooOnBar, this, ID_TOOLS_REPLACE_FOO_BAR);
     Bind(wxEVT_BUTTON, &MainFrame::OnReverseText, this, ID_TOOLS_REVERS_TEXT);
     Bind(wxEVT_BUTTON, &MainFrame::OnSortLinesByLength, this, ID_TOOLS_SORT_LINES_BY_TEXT);
-    
-    Bind(wxEVT_BUTTON, &MainFrame::OnCopyCustom, this, ID_COPY_ALL_FIELDS);
-    Bind(wxEVT_BUTTON, &MainFrame::OnPaste, this, ID_PASTE_ALL_FIELDS);
 
+    // Tools
+    Bind(wxEVT_BUTTON, &MainFrame::OnReplaceAll, this, ID_REPLACE_GO_BUTTON);
+
+   
     Bind(wxEVT_STC_CHANGE, &MainFrame::OnTextChanged, this, editor->GetId());
 }
 
@@ -422,4 +454,15 @@ void MainFrame::OnSortLinesByLength(cmd &evt)
     wxString wxSortedText(sortedText);
 
     this->editor->SetText(wxSortedText);
+}
+
+void MainFrame::OnReplaceAll(cmd &evt){
+    wxString wxTextEditor = this->editor->GetText();
+    wxString wxTextFrom = this->searchCtrl->GetValue();
+    wxString wxTextTo = this->replaceCtrl->GetValue();
+    std::string stdTextEditor = std::string(wxTextEditor.mb_str(wxConvUTF8));
+    std::string stdTextFrom = std::string(wxTextFrom.mb_str(wxConvUTF8));
+    std::string stdTextTo = std::string(wxTextTo.mb_str(wxConvUTF8));
+    std::string replaceText = util::replaceAll(stdTextEditor, stdTextFrom, stdTextTo, false, false);
+    this->editor->SetText(replaceText);
 }

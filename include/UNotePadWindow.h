@@ -30,6 +30,7 @@ enum MyCustomIDs
     ID_TOOLS_REPLACE_FOO_BAR = wxID_HIGHEST + 4,
     ID_TOOLS_REVERS_TEXT = wxID_HIGHEST + 5,
     ID_TOOLS_SORT_LINES_BY_TEXT = wxID_HIGHEST + 6,
+    ID_REPLACE_GO_BUTTON = wxID_HIGHEST + 7,
 };
 
 constexpr char ICONS_PATH[] = "icons/";
@@ -63,11 +64,14 @@ private:
     using cmd = wxCommandEvent;
 
     wxStyledTextCtrl *editor;
+    wxTextCtrl* searchCtrl;
+    wxTextCtrl* replaceCtrl;
 
     // Event methods for menu items
     wxPanel *CreateEditorPanel();
     wxPanel *CreateButtonsPanel();
-    wxButton *CreateTextButton(wxWindow* parent, int id, const wxString& label);
+    wxPanel* CreateReplacePanel();
+    wxButton *CreateTextButton(wxWindow *parent, int id, const wxString &label);
     wxBitmapButton *CreateBitmapButton(wxWindow *parent, int id, const std::string &filename);
 
     void CreateMenuBar();
@@ -90,6 +94,7 @@ private:
     void OnTextChanged(cmd &evt);
     void OnReverseText(cmd &evt);
     void OnSortLinesByLength(cmd &evt);
+    void OnReplaceAll(cmd &evt);
 };
 
 void SaveStringToFile(const std::string &filepath, const std::string &content);
