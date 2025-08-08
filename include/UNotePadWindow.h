@@ -66,6 +66,7 @@ private:
     wxStyledTextCtrl *editor;
     wxTextCtrl* searchCtrl;
     wxTextCtrl* replaceCtrl;
+    wxCheckBox* useRegexCheckBox;
 
     // Event methods for menu items
     wxPanel *CreateEditorPanel();

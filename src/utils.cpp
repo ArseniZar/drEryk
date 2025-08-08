@@ -35,6 +35,16 @@ namespace util
         return true;
     }
 
+    std::string regexReplaceAll(const std::string &text, const std::string &pattern, const std::string &replacement, bool caseSensitive)
+    {
+        std::regex_constants::syntax_option_type flags = std::regex::ECMAScript;
+        if (!caseSensitive)
+            flags |= std::regex::icase;
+
+        std::regex re(pattern, flags);
+        return std::regex_replace(text, re, replacement);
+    }
+
     std::string replaceAll(const std::string &text, const std::string &from, const std::string &to, bool caseSensitive, bool wholeWordsOnly)
     {
 

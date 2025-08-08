@@ -23,11 +23,11 @@ bool UNotePadWindow::OnInit()
 MainFrame::MainFrame(const wxString &title) : wxFrame(nullptr, wxID_ANY, title)
 {
 #if WIN32
-    this->SetIcon(wxICON(appicon));                           // Set the application icon
-#endif                                                        // WIN32
-    wxBoxSizer *mainSizer = new wxBoxSizer(wxHORIZONTAL);     
-    wxBoxSizer *leftPanelSizer = new wxBoxSizer(wxVERTICAL); 
-    wxBoxSizer *rightPanelSizer = new wxBoxSizer(wxVERTICAL); 
+    this->SetIcon(wxICON(appicon)); // Set the application icon
+#endif                              // WIN32
+    wxBoxSizer *mainSizer = new wxBoxSizer(wxHORIZONTAL);
+    wxBoxSizer *leftPanelSizer = new wxBoxSizer(wxVERTICAL);
+    wxBoxSizer *rightPanelSizer = new wxBoxSizer(wxVERTICAL);
 
     wxPanel *replacePanel = CreateReplacePanel();
     wxPanel *editorPanel = CreateEditorPanel();
@@ -92,6 +92,9 @@ wxPanel *MainFrame::CreateReplacePanel()
     hbox->Add(new wxStaticText(panel, wxID_ANY, "Replace:"), 0, wxALIGN_CENTER_VERTICAL | wxRIGHT, 5);
     replaceCtrl = new wxTextCtrl(panel, wxID_ANY);
     hbox->Add(replaceCtrl, 1, wxRIGHT, 10);
+
+    useRegexCheckBox = new wxCheckBox(panel, wxID_ANY, "Use regex");
+    hbox->Add(useRegexCheckBox, 0, wxALIGN_CENTER_VERTICAL | wxRIGHT, 10);
 
     wxButton *goButton = new wxButton(panel, ID_REPLACE_GO_BUTTON, "Go");
     hbox->Add(goButton, 0);
@@ -188,10 +191,9 @@ void MainFrame::BindEvents()
     Bind(wxEVT_BUTTON, &MainFrame::OnReverseText, this, ID_TOOLS_REVERS_TEXT);
     Bind(wxEVT_BUTTON, &MainFrame::OnSortLinesByLength, this, ID_TOOLS_SORT_LINES_BY_TEXT);
 
-    // Tools
+    // Replace
     Bind(wxEVT_BUTTON, &MainFrame::OnReplaceAll, this, ID_REPLACE_GO_BUTTON);
 
-   
     Bind(wxEVT_STC_CHANGE, &MainFrame::OnTextChanged, this, editor->GetId());
 }
 
@@ -456,13 +458,35 @@ void MainFrame::OnSortLinesByLength(cmd &evt)
     this->editor->SetText(wxSortedText);
 }
 
-void MainFrame::OnReplaceAll(cmd &evt){
+void MainFrame::OnReplaceAll(wxCommandEvent &evt)
+{
     wxString wxTextEditor = this->editor->GetText();
     wxString wxTextFrom = this->searchCtrl->GetValue();
     wxString wxTextTo = this->replaceCtrl->GetValue();
-    std::string stdTextEditor = std::string(wxTextEditor.mb_str(wxConvUTF8));
-    std::string stdTextFrom = std::string(wxTextFrom.mb_str(wxConvUTF8));
-    std::string stdTextTo = std::string(wxTextTo.mb_str(wxConvUTF8));
-    std::string replaceText = util::replaceAll(stdTextEditor, stdTextFrom, stdTextTo, false, false);
-    this->editor->SetText(replaceText);
+    bool useRegex = useRegexCheckBox->IsChecked();
+
+    std::string textEditor = std::string(wxTextEditor.mb_str(wxConvUTF8));
+    std::string textFrom = std::string(wxTextFrom.mb_str(wxConvUTF8));
+    std::string textTo = std::string(wxTextTo.mb_str(wxConvUTF8));
+
+    std::string resultText;
+
+    if (useRegex)
+    {
+        try
+        {
+            resultText = util::regexReplaceAll(textEditor, textFrom, textTo, true);
+            this->editor->SetText(resultText);
+        }
+        catch (const std::exception &e)
+        {
+            wxMessageBox("Invalid regular expression. Please check your pattern and try again.",
+                         "Regex Error", wxOK | wxICON_ERROR);
+        }
+    }
+    else
+    {
+        resultText = util::replaceAll(textEditor, textFrom, textTo, true, false);
+        this->editor->SetText(resultText);
+    }
 }
