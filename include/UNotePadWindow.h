@@ -33,6 +33,13 @@ enum MyCustomIDs
     ID_REPLACE_GO_BUTTON = wxID_HIGHEST + 7,
 };
 
+enum StatusBarFields
+{
+    CHAR_COUNT_FIELD = 0,
+    WORD_COUNT_FIELD = 1,
+    STATUS_COUNT = 2
+};
+
 constexpr char ICONS_PATH[] = "icons/";
 
 /**

@@ -91,6 +91,30 @@ namespace util
         return text.size();
     }
 
+    size_t countWords(const std::string &text)
+    {
+        bool inWord = false;
+        size_t count = 0;
+
+        for (char ch : text)
+        {
+            if (std::isspace(static_cast<unsigned char>(ch))) 
+            {
+                if (inWord)
+                    inWord = false; 
+            }
+            else
+            {
+                if (!inWord)
+                {
+                    inWord = true;
+                    ++count;
+                }
+            }
+        }
+        return count;
+    }
+
     std::string sortLines(const std::string &input, bool ascending)
     {
         std::vector<std::string> lines;

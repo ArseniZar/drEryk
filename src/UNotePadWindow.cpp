@@ -44,7 +44,7 @@ MainFrame::MainFrame(const wxString &title) : wxFrame(nullptr, wxID_ANY, title)
     SetSizerAndFit(mainSizer);
 
     CreateMenuBar();
-    CreateStatusBar();
+    CreateStatusBar(STATUS_COUNT);
     BindEvents();
 }
 
@@ -435,9 +435,14 @@ void MainFrame::OnTextChanged(cmd &evt)
 {
     wxString wxText = this->editor->GetText();
     std::string stdText = std::string(wxText.mb_str(wxConvUTF8));
-    size_t length = util::countChars(stdText);
-    wxString message = wxString::Format("Characters: %zu", length);
-    SetStatusText(message);
+    size_t charCount = util::countChars(stdText);
+    size_t wordCount = util::countWords(stdText);
+
+    wxString statusChars = wxString::Format("Characters: %zu", charCount);
+    wxString statusWords = wxString::Format("Words: %zu", wordCount);
+
+    SetStatusText(statusChars, CHAR_COUNT_FIELD);
+    SetStatusText(statusWords, WORD_COUNT_FIELD);
 }
 
 void MainFrame ::OnReverseText(cmd &evt)
