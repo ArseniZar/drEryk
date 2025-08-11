@@ -14,23 +14,41 @@ MainFrame::MainFrame(const wxString &title)
     wxBoxSizer *mainSizer = new wxBoxSizer(wxVERTICAL);
     wxBoxSizer *panelsizer = new wxBoxSizer(wxHORIZONTAL);
 
+    wxBoxSizer *replaceSizer = new wxBoxSizer(wxVERTICAL);
+
+    wxStaticText *searchLabel = new wxStaticText(panel, wxID_ANY, "Search:");
+    searchCtrl = new wxTextCtrl(panel, ID_SearchEdit, "", wxDefaultPosition, wxSize(100, -1));
+    wxStaticText *replaceLabel = new wxStaticText(panel, wxID_ANY, "Replace:");
+    replaceCtrl = new wxTextCtrl(panel, ID_ReplaceEdit, "", wxDefaultPosition, wxSize(100, -1));
+    useRegexCheckBox = new wxCheckBox(panel, ID_UseRegexCheckBox, "Use Regex");
+    wxButton *goButton = new wxButton(panel, ID_GoButton, "Go");
+
+
+    replaceSizer->Add(searchLabel, 0, wxALL | wxALIGN_LEFT, 2);
+    replaceSizer->Add(searchCtrl, 0, wxALL | wxALIGN_LEFT, 2);
+    replaceSizer->Add(replaceLabel, 0, wxALL | wxALIGN_LEFT, 2);
+    replaceSizer->Add(replaceCtrl, 0, wxALL | wxALIGN_LEFT, 2);
+    replaceSizer->Add(useRegexCheckBox, 0, wxALL | wxALIGN_LEFT, 2);
+    replaceSizer->Add(goButton, 0, wxALL | wxALIGN_LEFT, 2);
+
     wxBoxSizer *verticalButtonSizer = new wxBoxSizer(wxVERTICAL);
 
-wxBitmap replaceBmp(wxImage("UNotePad.app/Contents/Resources/icon/icons8-move-up-row-50.png").Rescale(32, 32));
-wxBitmap reverseBmp(wxImage("UNotePad.app/Contents/Resources/icon/icons8-reverse-50.png").Rescale(32, 32));
-wxBitmap sortLinesBmp(wxImage("UNotePad.app/Contents/Resources/icon/icons8-sort-50.png").Rescale(32, 32));
+    wxBitmap replaceBmp(wxImage("UNotePad.app/Contents/Resources/icon/icons8-move-up-row-50.png").Rescale(32, 32));
+    wxBitmap reverseBmp(wxImage("UNotePad.app/Contents/Resources/icon/icons8-reverse-50.png").Rescale(32, 32));
+    wxBitmap sortLinesBmp(wxImage("UNotePad.app/Contents/Resources/icon/icons8-sort-50.png").Rescale(32, 32));
     wxButton *palindromeButton = new wxButton(panel, ID_CheckPalindrome, "IsPal");
     wxBitmapButton *replaceButton = new wxBitmapButton(panel, ID_ReplaceFooBar, replaceBmp, wxDefaultPosition, wxDefaultSize, wxBU_AUTODRAW);
     wxBitmapButton *reverseButton = new wxBitmapButton(panel, ID_ReverseText, reverseBmp, wxDefaultPosition, wxDefaultSize, wxBU_AUTODRAW);
     wxBitmapButton *sortLinesButton = new wxBitmapButton(panel, ID_SortLines, sortLinesBmp, wxDefaultPosition, wxDefaultSize, wxBU_AUTODRAW);
 
+    verticalButtonSizer->Add(replaceSizer, 0, wxALL, 5);
     verticalButtonSizer->Add(palindromeButton, 0, wxALL | wxALIGN_RIGHT, 5);
     verticalButtonSizer->Add(replaceButton, 0, wxALL | wxALIGN_RIGHT, 5);
     verticalButtonSizer->Add(reverseButton, 0, wxALL | wxALIGN_RIGHT, 5);
     verticalButtonSizer->Add(sortLinesButton, 0, wxALL | wxALIGN_RIGHT, 5);
-   
+
     panelsizer->Add(editor, 1, wxEXPAND | wxALL, 0);
-    panelsizer->Add(verticalButtonSizer, 0, wxALL | wxALIGN_RIGHT, 5);  
+    panelsizer->Add(verticalButtonSizer, 0, wxALL | wxALIGN_RIGHT, 5);
     editor->SetMinSize(wxSize(300, 300));
 
     panel->SetSizerAndFit(panelsizer);
@@ -112,6 +130,8 @@ wxBitmap sortLinesBmp(wxImage("UNotePad.app/Contents/Resources/icon/icons8-sort-
 
     Bind(wxEVT_MENU, &MainFrame::OnSortLines, this, ID_SortLines);
     Bind(wxEVT_BUTTON, &MainFrame::OnSortLines, this, ID_SortLines);
+
+    Bind(wxEVT_BUTTON, &MainFrame::OnGoButton, this, ID_GoButton);
 
     OnEditorChanged(wxStyledTextEvent());
 }
@@ -341,8 +361,16 @@ void MainFrame::OnEditorChanged(const wxStyledTextEvent &WXUNUSED(evt))
 {
     wxString text = editor->GetText();
     size_t charCount = text.Length();
+
+    wxStringTokenizer tokenizer(text, " \n\r");
+    size_t wordCount = 0;
+    while (tokenizer.HasMoreTokens())
+    {
+        tokenizer.GetNextToken();
+        wordCount++;
+    }
     wxString statusText;
-    statusText.Printf("Char Count: %zu", charCount);
+    statusText.Printf("Char Count: %zu | Word Count: %zu", charCount, wordCount);
     SetStatusText(statusText);
 }
 
@@ -384,4 +412,37 @@ void MainFrame::OnSortLines(wxCommandEvent &WXUNUSED(evt))
     editor->SetText(sortedText);
     wxMessageBox("Lines have been sorted by length.",
                  "Sort Complete", wxOK | wxICON_INFORMATION);
+}
+
+void MainFrame::OnGoButton(wxCommandEvent &WXUNUSED(evt))
+{
+    wxString searchText = searchCtrl->GetValue();
+    wxString replaceText = replaceCtrl->GetValue();
+
+    if (searchText.IsEmpty()) {
+        wxMessageBox("Search field cannot be empty.", "Error", wxOK | wxICON_ERROR);
+        return;
+    }
+
+    wxString originalText = editor->GetText();
+    wxString newText = originalText;
+    wxString message;
+    
+    if (useRegexCheckBox->GetValue()) {
+        // Use regex replacement
+        wxRegEx regex(searchText, wxRE_ADVANCED | wxRE_ICASE); 
+        if (!regex.IsValid()) {
+            wxMessageBox("Invalid regular expression.", "Regex Error", wxOK | wxICON_ERROR);
+            return;
+        }
+        long numReplaced = regex.ReplaceAll(&newText, replaceText);
+        message.Printf("Replaced %ld occurrences using regex.", numReplaced);
+    } else {
+        // Simple string replacement
+        long numReplaced = newText.Replace(searchText, replaceText);
+        message.Printf("Replaced %ld occurrences of '%s' with '%s'.", numReplaced, searchText, replaceText);
+    }
+    
+    editor->SetText(newText);
+    wxMessageBox(message, "Replace Complete", wxOK | wxICON_INFORMATION);
 }

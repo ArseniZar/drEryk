@@ -12,6 +12,7 @@
 #include <wx/clipbrd.h>
 #include <wx/filename.h>
 #include <wx/artprov.h>
+#include <wx/regex.h>
 #include <wx/image.h> 
 
 enum
@@ -23,7 +24,11 @@ enum
     ID_CheckPalindrome,
     ID_ReplaceFooBar,
     ID_ReverseText,
-    ID_SortLines
+    ID_SortLines,
+    ID_SearchEdit,
+    ID_ReplaceEdit,
+    ID_GoButton,
+    ID_UseRegexCheckBox
 };
 
 class MainFrame : public wxFrame {
@@ -33,6 +38,9 @@ public:
 private:
     wxPanel *panel;
     wxStyledTextCtrl *editor;
+    wxTextCtrl *searchCtrl; 
+    wxTextCtrl *replaceCtrl; 
+    wxCheckBox *useRegexCheckBox;
 
     void OnExit(wxCommandEvent &evt);
     void OnAbout(wxCommandEvent &evt);
@@ -52,6 +60,7 @@ private:
     void OnReplaceFooBar(wxCommandEvent &evt);
     void OnReverseText(wxCommandEvent &evt);
     void OnSortLines(wxCommandEvent &evt);
+    void OnGoButton(wxCommandEvent &evt);
 };
 
 #endif // MAIN_FRAME_H
